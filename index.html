@@ -186,7 +186,7 @@ textarea#report{width:100%;min-height:260px;font-family:ui-monospace,Menlo,Conso
   <section class="card" aria-label="整合版說明">
     <h2>道路情境實驗室 · 整合版</h2>
     <p>路線更新版 2026.10.19・請從範例選單重新載入新版路線。先選範例 → 調整路段與需求 → 觀察瓶頸 → 保存 A／B 比較。整合 Claude 進階版與 ChatGPT 檢核修正；程式、樣式均在本檔，可離線操作。</p>
-    <p class="note">本作品為教學模型。未特別標註高架／橋梁或隧道的構造預設為路堤；這是建模預設，不能用來判定未查證道路的實際構造。地名範例的里程、速限、管制配置皆為情境輸入，未逐項驗證為現況。管理／養護體系只改變參考資料，不代表品質等級，也不直接改變容量。大型車用道政策、雨天係數、科技執法效果及水漂數值均為可調假設。</p>
+    <p class="note">本作品為教學模型。未特別標註高架／橋梁或隧道的構造預設為路堤；這是建模預設，不能用來判定未查證道路的實際構造。地名範例的里程、速限、管制配置皆為情境輸入，未逐項驗證為現況。管理／養護體系只改變參考資料，不代表品質等級，也不直接改變容量。大型車用道政策、雨天係數、科技執法效果及水漂數值均為可調假設。隧道動畫採平順跟車近似，不能保證逐幀符合50／100公尺法定車距；法規參考值與實際動畫需分開判讀。</p>
     <div class="toolrow"><button id="defaultCorridor" type="button">載入新版預設走廊（110／60）</button><button id="jsonSave" type="button">下載情境 JSON</button><button id="jsonLoad" type="button">匯入情境 JSON</button><input id="jsonFile" type="file" accept=".json,application/json" hidden><span id="jsonNote" role="status"></span></div>
     <p class="note">預設走廊：所有路段一般車輛最高／最低速限 110／60 km/h、主線 3 車道；上坡另加爬坡車道。大貨車車種在本模型代表行照核定總重達 20 公噸者，預設 90／60 km/h，可逐段修改。若畫面保留上次設定，按上方按鈕載入新版預設。</p>
     <p id="inputError" role="alert" hidden style="color:var(--bad);font-weight:700"></p>
@@ -511,7 +511,7 @@ const PRESETS={
     realSeg(32.585,33.040,{name:'安坑隧道南下',struct:'tunnel',lanes:3,marking:'double'}),
     realSeg(33.040,34.223,{name:'安坑隧道—中和隧道',lanes:3,align:'curve'}),
     realSeg(34.223,35.095,{name:'中和隧道南下',struct:'tunnel',lanes:3,marking:'double',note:'35K速限分界在本洞末段；本路段取較低90，未在洞內另畫速限分段。'}),
-    realSeg(35.095,36.2,{name:'中和交流道（出口＋雙車道入口）',lanes:3,limit:100,off:ramp('ic',1100),on:ramp('ic',600,2,300),note:'35K以南一般速限100；入口先以2車道建模，主線口配置待核對，並未宣稱已驗證。'})]}),
+    realSeg(35.095,36.2,{name:'中和交流道（出口＋雙車道入口）',lanes:4,limit:100,off:ramp('ic',1100),on:ramp('ic',600,2,300),note:'依Claude校閱補入中和以南4主線的情境設定；入口先以2車道建模，分界與主線口配置仍待標線圖核對。'})]}),
   muzha:()=>base({demand:3700,ffs:90,segments:[
     realSeg(20.8,20,{name:'國3北上・木柵交流道（國3甲）',lanes:3,off:ramp('sys',500),on:ramp('sys',650,1,300)}),
     realSeg(20,19.959,{name:'木柵交流道—福德隧道南口',lanes:3,note:'銜接段41m，按隧道口里程分段。'}),
@@ -551,12 +551,12 @@ const PRESETS={
   suhua:()=>base({agency:'thb',demand:1050,ffs:70,legalMode:'tunnel',truckNoInner:false,mix:{car:71,van:9,ltruck:5,bus:6,truck:9},segments:[
     realSeg(124.770,125.576,{name:'台9南下・南澳端路堤',lanes:1,limit:60,minLimit:0,truckLimit:60,truckMinLimit:0,unit:'公路局東區養護工程分局',note:'本路徑從南澳端出發，端點最高60為教學設定，現場有50／60分段；不納入舊路平交路口號誌。'}),
     realSeg(125.576,127.882,{name:'南澳北溪橋—武塔高架橋',struct:'elevated',lanes:1,limit:70,minLimit:50,truckLimit:70,truckMinLimit:50,note:'橋梁及其間銜接路堤合併示意，本段構造界尚非實測。一般車道1；緊急救援／大客車優先空間不計為第2一般車道。'}),
-    realSeg(127.882,128.345,{name:'武塔隧道南下',struct:'tunnel',lanes:1,limit:70,minLimit:50,truckLimit:70,truckMinLimit:50,tunnelRule:true,distanceRule:'posted',marking:'double',note:'隧道里程依公路局應開頭燈路段表；車距依蘇花改管制公告50／100m，壅塞20m。'}),
+    realSeg(127.882,128.345,{name:'武塔隧道南下',struct:'tunnel',lanes:1,limit:50,minLimit:0,truckLimit:50,truckMinLimit:0,tunnelRule:true,distanceRule:'posted',marking:'double',note:'依Claude校閱將約460m短隧道改為最高50情境；里程依公路局應開頭燈路段表，車距依公告管制情境，現場牌面優先。'}),
     realSeg(128.345,129.102,{name:'南澳南溪橋與觀音北口銜接',struct:'elevated',lanes:1,limit:70,minLimit:50,truckLimit:70,truckMinLimit:50,note:'約675m河川橋及銜接段合併示意；不能因短暫出隧道便新增一般車道。'}),
     realSeg(129.102,141.716,{name:'觀音隧道—鼓音橋—谷風隧道（封閉廊道）',struct:'tunnel',lanes:1,limit:70,minLimit:50,truckLimit:70,truckMinLimit:50,tunnelRule:true,distanceRule:'posted',marking:'double',note:'官方管制里程129K102–141K716。內含約60m封閉式鼓音橋，暫合併為隧道環境；並未宣稱橋體本身是隧道。觀音約7.9km、谷風約4.6km。'}),
     realSeg(141.716,143.802,{name:'漢本高架橋—和平溪橋',struct:'elevated',lanes:1,limit:70,minLimit:50,truckLimit:70,truckMinLimit:50,note:'橋梁群合併示意；各橋與路堤交界仍待竣工圖細分。'}),
     realSeg(143.802,145.061,{name:'和平端路堤銜接',lanes:1,limit:60,minLimit:0,truckLimit:60,truckMinLimit:0,note:'70／50提速範圍在143K802結束，端點最高60採情境值；現地50／60漸變依牌面。'})]}),
-  nanhui:()=>base({agency:'thb',demand:1600,ffs:70,legalMode:'tunnel',truckNoInner:false,mix:{car:70,van:10,ltruck:6,bus:4,truck:10},segments:[
+  nanhui:()=>base({agency:'thb',demand:1600,ffs:70,legalMode:'tunnel',truckNoInner:true,mix:{car:70,van:10,ltruck:6,bus:4,truck:10},segments:[
     realSeg(427.3,428.4,{name:'台9南下・安朔端路堤',lanes:2,limit:70,minLimit:50,truckLimit:70,truckMinLimit:50,unit:'公路局南區養護工程分局',note:'選取安朔—草埔改善段，不包含南迴公路全線。路堤與高架界428.4為示意，坡度未設為實測值。'}),
     realSeg(428.4,432.9,{name:'安朔高架橋與隧道前引道',struct:'elevated',lanes:2,align:'cst',limit:70,minLimit:50,truckLimit:70,truckMinLimit:50,note:'高架／引道合併示意；真實縱坡待縱斷圖輸入，預設平坡不代表現況完全水平。'}),
     realSeg(432.9,437.6,{name:'草埔森永隧道南下',struct:'tunnel',lanes:2,limit:70,minLimit:50,truckLimit:70,truckMinLimit:50,marking:'double',tunnelRule:true,distanceRule:'posted',note:'官方交管公告區間432K900–437K600，取公告涵蓋長度4.7km建模，介紹資料約4.6km；禁止變換車道。車距50／100m為可調公告車距情境。'}),
@@ -697,7 +697,7 @@ Object.assign(ROUTE_META,{
  tai63:{title:'公路局｜台63中投公路南下：大里→霧峰選段',text:'示範主線封閉、與側車道分離的省道路段，依使用者修正，範例全程採單向3主線車道，最高70為參考情境。高架另標、其餘預設路堤；匝道群與路段長度採簡化，不自動套用高速／快速公路第6條車距。',sources:['tai63','tai63Speed','tai63Bridge']}
 });
 function routeSources(sc){const m=ROUTE_META[sc.presetKey];return m?.sources?m.sources.map(k=>REGIONAL_SOURCES[k]):ROUTE_SOURCES}
-for(const [key,fn] of Object.entries(PRESETS))PRESETS[key]=()=>Object.assign(fn(),{presetKey:key,scenarioVersion:2026101906});
+for(const [key,fn] of Object.entries(PRESETS))PRESETS[key]=()=>Object.assign(fn(),{presetKey:key,scenarioVersion:2026101907});
 function routeName(key){return({nangang:'國3南下主線',nangangLink:'環東聯絡道與南下入口',xizhi:'平面往東湖／內湖',xizhiElev:'汐五高架往堤頂',wugu:'平面3主線＋爬坡道',wuguAux:'分離輔助道至匯流口',wuguElev:'高架3→2・泰山2匯入→3'})[key]||key}
 function rampText(r){return r.kind==='none'?'無':`${r.label|| (r.kind==='sys'?'系統轉接道':'匝道')}（${r.side==='inner'?'內側／左側':'外側／右側'}）：主線口 ${r.lanes} 車道${r.downstreamLanes?'；下游最多 '+r.downstreamLanes+' 車道':''}${r.continues?'；其中 '+(r.continueLanes??r.lanes)+' 道延續為主線車道':''}${r.fromMain?'；既有外側車道直接接出口，不另增車道':''}`}
 /* National Highway 1: source-based lane topology, separate from a selected trip's IDM model. */
@@ -1480,7 +1480,7 @@ function v0For(v,si){
 function legalT(g,v,p,v0,approach){
   if(!g.legal.enforced)return 0;const kmh=v0*3.6,hv=VC[v.cls].heavy;
   // tunnel rule: 50 m (heavy 100 m) at the desired speed, easing to the 20 m standstill distance as traffic slows
-  if(g.legal.rule==='tunnel'){const sp=approach?v0:v.v;return Math.max(0,legalGap(g,v,sp)-20)/Math.max(0.1,sp)}
+  if(g.legal.rule==='tunnel')return((hv?100:50)-20)/Math.max(5,v0); // Claude's smooth teaching approximation; not a per-frame legal-distance guarantee.
   // Art. 6: small vehicles V/2 m, large V-20 m (at least V/2), at the current speed V; larger in bad weather. s0 + v*T then equals the legal gap.
   const vv=Math.max(5,v.v),kv=vv*3.6,need=(hv?Math.max(kv/2,kv-20):kv/2)*(g.legal.dCar/(g.desired/2));return Math.max(0,need-p.s0)/vv;
 }
