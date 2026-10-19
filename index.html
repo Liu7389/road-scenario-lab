@@ -346,7 +346,7 @@ textarea#report{width:100%;min-height:260px;font-family:ui-monospace,Menlo,Conso
       <ol class="note" style="padding-left:18px;margin:8px 0 0;display:grid;gap:4px">
         <li>需求流率＝小時交通量 ÷ PHF；出口匝道依比例分流，入口匝道在路段末端匯入。</li>
         <li>每車道容量（pc/h）＝基準容量 × 跟車時距係數 × 線型 × 隧道 × 天候 × 施工 × 車道縮減匯入係數。</li>
-        <li>大型車調整 fHV＝1 ÷（1＋Σ 各車種比例 ×（當量 − 1））；大貨車、大客車、小貨車分別計算，上坡當量隨坡度與坡長增加，設爬坡車道後主線當量降低。</li>
+        <li>大型車調整 fHV＝1 ÷（1＋Σ 各車種比例 ×（當量 − 1））；大貨車、大客車、小貨車分別計算，上坡當量隨坡度與坡長增加；相鄰同坡度上坡合併計算坡長，不因交流道／隧道分段重設。設爬坡車道後主線當量降低。</li>
         <li>路段容量（veh/h）＝開放主線車道 × 每車道容量 × fHV＋爬坡車道容量；入口匯入區再乘加速車道長度係數，出口匝道容量不足時扣減外側車道容量。</li>
         <li>由上游往下游逐點比較到達流率與容量，超過的點形成排隊，排隊車輛＝（到達 − 容量）× 時段，以簡化密度差估算回堵長度（非完整動態回堵波模型）。</li>
         <li>車速：流量／容量低於門檻時維持期望車速（自由流速、速限＋超速偏差假設、水漂降速取最小），之後以二次曲線降到容量時車速。</li>
@@ -650,17 +650,19 @@ function analyze(sc){
       P.onMix=s.truckBan||banAhead(i)?mixNT:mix;
       if(s.on&&s.on.kind!=='none'&&s.on.vol>0)VKEYS.forEach(k=>cf[k]+=s.on.vol/phf*P.onMix[k]);
       pre.push(P)})}
+  // Equal-grade uphill segments form one run; an interchange or tunnel label must not reset the assumed climbing penalty.
+  const gradeRuns=sc.segments.map((s,i)=>{if(s.grade!=='up')return s.len;let sum=s.len;for(let j=i-1;j>=0&&sc.segments[j].grade==='up'&&sc.segments[j].gradePct===s.gradePct;j--)sum+=sc.segments[j].len;for(let j=i+1;j<sc.segments.length&&sc.segments[j].grade==='up'&&sc.segments[j].gradePct===s.gradePct;j++)sum+=sc.segments[j].len;return sum});
   const fH=(A.refGap+A.occTime)/(Math.max(0.5,sc.headway)+A.occTime);
   const segs=[];let x=0,prevOpen=null,maxRows=1;
   sc.segments.forEach((s,i)=>{
-    const L=laneLayout(s),mix=pre[i].mix;
+    const L=laneLayout(s),mix=pre[i].mix,gradeRunLen=gradeRuns[i];
     const climbOpen=L.hasClimb&&L.open.includes(L.climbIdx);
     const mainOpen=L.open.length-(climbOpen?1:0);
     const tunnel=s.struct==='tunnel',elev=s.struct==='elevated';
     const wk=s.weather&&s.weather!=='global'?s.weather:sc.weather;
     const{wCap,wFfs}=weatherFactors(wk,s,A);
     let ET=A.etLevel;
-    if(s.grade==='up')ET=Math.min(7,A.etLevel+A.etGradeK*s.gradePct*Math.pow(Math.min(s.len,3),0.7));
+    if(s.grade==='up')ET=Math.min(7,A.etLevel+A.etGradeK*s.gradePct*Math.pow(Math.min(gradeRunLen,3),0.7));
     else if(s.grade==='down'&&s.gradePct>=4)ET=A.etLevel+0.5;
     if(wk==='wind'&&elev&&!tunnel)ET+=A.windElevET;
     const E={car:1,van:1,truck:ET,bus:1+(ET-1)*A.etBusRatio,ltruck:A.etLtruck+Math.max(0,ET-A.etLevel)*A.ltruckGradeRatio};
@@ -699,8 +701,8 @@ function analyze(sc){
       hydro={film,vCar,vTruck,rec,level,desiredBefore:desired};
       if(sc.hydroSlow&&level!=='低')desired=Math.max(30,Math.min(desired,rec));
     }
-    const busCrawl=s.grade==='up'?Math.max(40,A.busMax-A.crawlK*A.busCrawlRatio*s.gradePct*Math.min(1,s.len/1.5)):Infinity;
-    const truckCrawl=s.grade==='up'?Math.max(30,s.truckLimit-A.crawlK*s.gradePct*Math.min(1,s.len/1.5)):Infinity;
+    const busCrawl=s.grade==='up'?Math.max(40,A.busMax-A.crawlK*A.busCrawlRatio*s.gradePct*Math.min(1,gradeRunLen/1.5)):Infinity;
+    const truckCrawl=s.grade==='up'?Math.max(30,s.truckLimit-A.crawlK*s.gradePct*Math.min(1,gradeRunLen/1.5)):Infinity;
     const truckSp=Math.min(desired,s.limit,s.truckLimit*wFfs,truckCrawl),busSp=Math.min(desired,A.busMax*wFfs,busCrawl);
     // safety distances at running (desired) speed
     const v=desired/3.6,fric=(wk==='rain'&&!tunnel)?A.fWet:A.fDry,G=(s.grade==='up'?1:s.grade==='down'?-1:0)*s.gradePct/100;
@@ -724,7 +726,7 @@ function analyze(sc){
     }
     const rows=L.total+Math.max(off?off.lanes:0,on?on.lanes:0);maxRows=Math.max(maxRows,rows);
     segs.push({i,src:s,wk,start:x*1000,end:(x+s.len)*1000,len:s.len,total:L.total,closed:L.closed,open:L.open,openSet:new Set(L.open),climbIdx:L.climbIdx,climbOpen,mainOpen,
-      E,Em,ET,fHV,pcf,capLanePc,climbLanePc,capMain,capClimb,cap,ffs,desired,truckSp,busSp,merge,wCap,wFfs,hydro,follow,react,stop:react+brake,fric,legal,legalBinding,capLegalLane,tunnelRule,kJam,
+      E,Em,ET,gradeRunLen,fHV,pcf,capLanePc,climbLanePc,capMain,capClimb,cap,ffs,desired,truckSp,busSp,merge,wCap,wFfs,hydro,follow,react,stop:react+brake,fric,legal,legalBinding,capLegalLane,tunnelRule,kJam,
       off,on,offCap,spill,onCap,accF,capMerge:cap*accF,meter:s.meter>0?s.meter:0,slowF,tech,mix,banCut:pre[i].banCut,cutVeh:pre[i].cutVeh,truckExit:pre[i].truckExit,offShareBase:pre[i].share,preOffShare:pre[i].offShare,onMix:pre[i].onMix});
     x+=s.len;prevOpen=L.open.length;
   });
@@ -1030,7 +1032,7 @@ function makeReport(){
   r.segs.forEach(g=>{const s=g.src;
     L.push(`${g.i+1}. ${s.name}｜${LBL.struct[s.struct]}・${LBL.align[s.align]}・${s.grade==='level'?'平坡':`${LBL.grade[s.grade]} ${s.gradePct}%`}・長 ${s.len} km`);
     L.push(`   車道 ${g.open.length}/${g.total}${g.climbOpen?'（含爬坡車道）':''}・標線 ${LBL.markingShort[s.marking]}${s.slowMark?'・減速標線':''}・一般車速限 ${s.limit}／最低 ${s.minLimit||'無'}・20噸以上大貨車速限 ${s.truckLimit}／最低 ${s.truckMinLimit||'無'}（有效最高 ${Math.min(s.limit,s.truckLimit)}）・天候 ${s.struct==='tunnel'?'隧道內':LBL.weather[g.wk]}`);
-    if(s.kmStart!=null)L.push(`   里程 ${s.kmStart}→${s.kmEnd} km`);if(s.note)L.push('   註記：'+s.note);if(g.climbOpen)L.push('   爬坡道獨立配置，與交流道匝道分開；連續路段不重複縮減。');
+    if(s.kmStart!=null)L.push(`   里程 ${s.kmStart}→${s.kmEnd} km`);if(s.note)L.push('   註記：'+s.note);if(s.grade==='up')L.push('   同坡度連續上坡計算長度 '+fmt(g.gradeRunLen,3)+' km（跨路段標籤不重設）');if(g.climbOpen)L.push('   爬坡道獨立配置，與交流道匝道分開；連續路段不重複縮減。');
     if(g.off)L.push(`   ${rampText(s.off)}；出口：${LBL.offKind[s.off.kind]} ${fmt(s.off.vol)} veh/h（匝道容量 ${fmt(g.offCap)}${g.spill?'，回堵主線':''}）`);
     if(g.meter)L.push(`   主線儀控：放行 ${fmt(g.meter)} veh/h（到達 ${fmt(g.meterArrive)} veh/h）`);
     if(g.on)L.push(`   ${rampText(s.on)}；入口：${LBL.onKind[s.on.kind]} ${fmt(s.on.vol)} veh/h${s.on.meter>0?`（匝道儀控 ${fmt(s.on.meter)} veh/h，等候 ${fmt(g.rampWait)} 輛）`:''}，加速車道 ${s.on.accel} m，匯入區容量 ${fmt(g.capMerge)}，需求／容量 ${fmt(g.dcMerge,2)}`);
