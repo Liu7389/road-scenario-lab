@@ -775,7 +775,7 @@ function n1Svg(key){
    parts.push(`<text x="${x}" y="315" font-size="11" fill="#344e40">${esc(n.out)}</text>`);
   }
   if(n.entry){const map=n.map||n.lanes.map((_,l)=>prev&&l<prev.lanes.length?l:null),added=map.flatMap((v,j)=>v===null?[j]:[]),targets=added.length?added:[n.lanes.length-1];
-   targets.forEach((lane,j)=>{const y=top+(lane+.5)*lh,sy=bottom+30+j*12;parts.push(`<path data-entry-lane="${lane}" d="M${x-10} ${sy}Q${x+30} ${sy},${x+65} ${y}" stroke="#f1f5f2" stroke-width="6" fill="none"/><path d="M${x-10} ${sy}Q${x+30} ${sy},${x+65} ${y}" stroke="#52645c" stroke-width="2" fill="none" marker-end="url(#n1Arrow)"/>`)});
+   targets.forEach((lane,j)=>{const y=top+(lane+.5)*lh,sy=bottom+30+j*12;parts.push(`<path data-entry-lane="${lane}" d="M${x-10} ${sy}Q${x-3} ${sy},${x+4} ${y}" stroke="#f1f5f2" stroke-width="6" fill="none"/><path d="M${x-10} ${sy}Q${x-3} ${sy},${x+4} ${y}" stroke="#52645c" stroke-width="2" fill="none" marker-end="url(#n1Arrow)"/>`)});
    parts.push(`<text x="${x}" y="337" font-size="11" fill="#344e40">${esc(n.entry)}</text>`);
   }
   if(i===n1NodeIndex)parts.push(`<rect x="${x-5}" y="94" width="${roadw+10}" height="${Math.max(90,n.lanes.length*lh+22)}" rx="5" stroke="#b77b25" stroke-width="3" fill="none"/>`);
