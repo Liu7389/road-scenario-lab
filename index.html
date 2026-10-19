@@ -950,7 +950,8 @@ function warnings(sc,R){
       else w.push(`${nm}適用隧道安全距離，但目前設定為不納入容量計算。`);
     }else if(s.struct==='tunnel'&&s.len<4)w.push(`${nm}未滿 4 km，除非管理機關公告，否則適用一般路段的安全距離（小型車為時速一半的公尺數）。`);
     const nx=segs[i+1];
-    if(nx&&nx.open.length<g.open.length)w.push(`${nm}→「${nx.src.name}」開放車道由 ${g.open.length} 減為 ${nx.open.length}，車輛需在${nm}末端匯入${s.marking==='double'||s.marking==='solid'?'；本路段禁止變換車道，動畫只在最後 300 公尺漸變段允許匯入':''}。`);
+    if(nx&&g.off?.fromMain)w.push(`${nm}外側 ${g.off.lanes} 車道直接分出接出口，下游保留 ${nx.open.length} 個續行車道；不下匝道的車輛須提前移入續行車道。`);
+    else if(nx&&nx.open.length<g.open.length)w.push(`${nm}→「${nx.src.name}」開放車道由 ${g.open.length} 減為 ${nx.open.length}，車輛需在${nm}末端匯入${s.marking==='double'||s.marking==='solid'?'；本路段禁止變換車道，動畫只在最後 300 公尺漸變段允許匯入':''}。`);
     if(s.struct==='tunnel'&&s.marking==='dash'&&s.len>=1)w.push(`${nm}為長隧道但標線為白虛線，長隧道多採雙白實線禁止變換車道。`);
   });
   segs.filter(g=>g.slowImpact>=0.2).forEach(g=>w.push(`「${g.src.name}」${g.noPass?'禁止變換車道':'車道少或車多'}，每車道平均約有 ${fmt(g.nSlow,1)} 輛龜速車，估計車速降到 ${fmt(g.speed)} km/h。`));
