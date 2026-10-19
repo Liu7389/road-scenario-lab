@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>body{margin:0}[hidden]{display:none!important}
-.n1-title{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}.n1-title .eyebrow{font-size:12px;letter-spacing:.1em;color:var(--sign);margin:0 0 6px}.n1-badge{border:1px solid var(--sign);border-radius:30px;padding:7px 12px;font-size:12px;color:var(--sign)}.n1-map{overflow:auto;border:1px solid var(--line);border-radius:10px;background:#f1f5f2;margin:14px 0}.n1-map svg{display:block;max-width:none;font-family:system-ui,"Noto Sans TC",sans-serif}.n1-legend{display:flex;gap:20px;flex-wrap:wrap;font-size:12px;margin-top:12px}.n1-legend span:nth-child(1){color:#24594c}.n1-legend span:nth-child(2){color:#326c87}.n1-legend span:nth-child(3){color:#73548c}.n1-legend span:nth-child(4){color:#8c6817}.n1-detail{background:var(--surface);border-left:4px solid #b77b25;padding:16px;margin:12px 0;border-radius:5px}.n1-detail p{margin:8px 0 0}.n1-picks button{font-size:12px}.toolrow button[aria-pressed=true]{background:var(--sign);color:var(--sign-ink)}#simScope{padding:12px 16px;margin:0;border-bottom:1px solid var(--line)}
+.n1-title{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}.n1-title .eyebrow{font-size:12px;letter-spacing:.1em;color:var(--sign);margin:0 0 6px}.n1-badge{border:1px solid var(--sign);border-radius:30px;padding:7px 12px;font-size:12px;color:var(--sign)}.n1-map{overflow:auto;border:1px solid var(--line);border-radius:10px;background:#f1f5f2;margin:14px 0}.n1-map svg{display:block;max-width:none;width:100%;height:auto;min-width:960px;font-family:system-ui,"Noto Sans TC",sans-serif}.n1-legend{display:flex;gap:20px;flex-wrap:wrap;font-size:12px;margin-top:12px}.n1-legend span:nth-child(1){color:#24594c}.n1-legend span:nth-child(2){color:#326c87}.n1-legend span:nth-child(3){color:#73548c}.n1-legend span:nth-child(4){color:#8c6817}.n1-detail{background:var(--surface);border-left:4px solid #b77b25;padding:16px;margin:12px 0;border-radius:5px}.n1-detail p{margin:8px 0 0}.n1-picks button{font-size:12px}.toolrow button[aria-pressed=true]{background:var(--sign);color:var(--sign-ink)}#simScope{padding:12px 16px;margin:0;border-bottom:1px solid var(--line)}
 
 </style>
 <title>封閉式道路交通情境模擬器｜整合版</title>
@@ -722,7 +722,7 @@ const N1_PANELS={
  {name:'汐止系統南入',km:'約11K～12K',lanes:[...n1M(3),n1Lane('aux','國3南入 1'),n1Lane('aux','國3南入 2')],map:[0,1,2,null,null],entry:'國3南入2道',note:'3條既有主線＋2條系統入口延續＝5；主線與輔助車道合計只有5，不能再加2。'},
  {name:'往汐止端交織段',km:'汐止系統～汐止端',lanes:[...n1M(3),n1Lane('aux','往高架 1'),n1Lane('aux','往高架 2')],note:'依官方表3＋2配置。於汐止端分出外側2車道上汐五高架，平面保留3車道。'}]},
  neihu:{label:'汐止端—東湖—內湖',sources:['aux','completed','wiki'],nodes:[
- {name:'汐止端・分流前',km:'約13K',lanes:[...n1M(3),n1Lane('elev','高架分支1'),n1Lane('elev','高架分支2')],out:'2道上汐五高架',note:'5→3平面＋2高架，為道路分支，不是3條車道消失。高架與平面範例各自計算選定旅次。'},
+ {name:'汐止端・分流前',km:'約13K',lanes:[...n1M(3),n1Lane('elev','高架分支1'),n1Lane('elev','高架分支2')],out:'2道上汐五高架',outLanes:[3,4],outElevated:true,note:'5→3平面＋2高架，為道路分支，不是3條車道消失。高架與平面範例各自計算選定旅次。'},
  {name:'平面往東湖',km:'汐止端～東湖',lanes:n1M(3),note:'高架車流已分出；東湖南下僅入口，不補不存在的出口。'},
  {name:'東湖入口後',km:'113-12-15改善完成',lanes:[...n1M(3),n1Lane('aux','匯出入輔助')],map:[0,1,2,null],entry:'東湖南下入口',note:'官方113-12-16完工公告：東湖—內湖主線外側增1道。本圖採改善後4車道，與較舊維基車道表不同時以公告優先。'},
  {name:'內湖A・南京東路',km:'A出口分流',lanes:[...n1M(3),n1Lane('aux','A出口專用')],out:'A出口（口數待核）',note:'A、B為兩次分流，不能合併成一個鼻端。111年底A/B匝道拓寬不代表主線口同樣增加；圖上專用道銜接採示意。'},
@@ -735,14 +735,14 @@ const N1_PANELS={
  {name:'高公局出口後',km:'官方圖約34.2K',lanes:[...n1M(3),n1Lane('elev','往泰山高架'),n1Lane('aux','往林口')],note:'外側出口專用道已分出，剩5；市區、機關出入口也須保留入口回程，不只畫出口。'},
  {name:'高公局入口後',km:'官方圖約34.6K',lanes:[...n1M(3),n1Lane('elev','往泰山高架'),n1Lane('aux','往林口 1'),n1Lane('aux','往林口 2')],map:[0,1,2,3,4,null],entry:'高公局入口1道',note:'入口補回外側第6道。官方圖及輔助道表均須按位置閱讀；不能把整段固定成3＋1＋2而忽略出口前後的增減。'}]},
  taishan:{label:'泰山分流—36K229',sources:['full','aux','wikiTai','climb'],nodes:[
- {name:'泰山轉接道前',km:'約35K',lanes:[...n1M(2),n1Lane('shared','平面／高架共用'),n1Lane('elev','上高架專用'),n1Lane('aux','林口分離道1'),n1Lane('aux','林口分離道2')],out:'上高架2道（含共用道）',note:'第三道兼供平面／高架；連同上高架專用道形成2車道轉接鼻端。平面續行3與外側分離2保留，不是把6車道全部匯成同一股3車道。'},
+ {name:'泰山轉接道前',km:'約35K',lanes:[...n1M(2),n1Lane('shared','平面／高架共用'),n1Lane('elev','上高架專用'),n1Lane('aux','林口分離道1'),n1Lane('aux','林口分離道2')],out:'上高架2道（含共用道）',outLanes:[2,3],outElevated:true,note:'第三道兼供平面／高架；連同上高架專用道形成2車道轉接鼻端。平面續行3與外側分離2保留，不是把6車道全部匯成同一股3車道。'},
  {name:'上高架分出後',km:'泰山轉接道後',lanes:[...n1M(3),n1Lane('aux','林口分離道1'),n1Lane('aux','林口分離道2')],map:[0,1,2,4,5],note:'留下3平面主線＋外側2分離輔助道；中間上高架的專用道已走另一座橋，地面5道與高架不能混算。'},
  {name:'外側兩道匯成一道',km:'官方圖約36.1K',lanes:[...n1M(3),n1Lane('aux','林口輔助道')],mergeExtra:[[4,3]],note:'縮減發生在外側分離輔助道2→1；主線仍3。不是先把分離道畫成全新2入口，再重複加容量。'},
  {name:'轉為爬坡道',km:'36K229起',lanes:[...n1M(3),n1Lane('climb','爬坡道')],shoulder:true,note:'外側輔助道接續成爬坡道，主線3＋爬坡1。最外側另有條件開放路肩，不能當成第5條永久主線；小型車／大客車、06–22時、80km/h依109年措施。'}]},
  linkou:{label:'長上坡—林口A/B',sources:['marks','rampA','climb','full','future'],nodes:[
  {name:'泰山—林口長上坡',km:'36K229～40K400',lanes:[...n1M(3),n1Lane('climb','連續爬坡道')],shoulder:true,note:'永久4道（3主線＋1爬坡），另列條件開放路肩。3.5%縱坡只是模擬值；有爬坡道不能反推出精確縱坡。'},
- {name:'林口A・文化一路',km:'約40.4K起',lanes:[...n1M(3),n1Lane('climb','爬坡道不停')],out:'A出口2道；下游拓寬3／4',note:'依手冊圖3.2-8，爬坡道跨越A出口，穿越虛線標示可跨越處。出口匝道口2道，匝道0K225–0K500為3道，末端0K500–0K523為4道。'},
- {name:'林口B・文化北路',km:'A之後再分流',lanes:[...n1M(3),n1Lane('climb','爬坡道不停')],out:'B出口1道',note:'手冊圖3.2-8明確另畫B主線分流口；它不是A出口下游的市區岔路。A/B入口的集散道連絡另列於下游匯入。'},
+ {name:'林口A・文化一路',km:'約40.4K起',lanes:[...n1M(3),n1Lane('climb','爬坡道不停')],out:'A出口2道；下游拓寬3／4',outAux:2,note:'依手冊圖3.2-8，爬坡道跨越A出口，穿越虛線標示可跨越處。出口匝道口2道，匝道0K225–0K500為3道，末端0K500–0K523為4道。'},
+ {name:'林口B・文化北路',km:'A之後再分流',lanes:[...n1M(3),n1Lane('climb','爬坡道不停')],out:'B出口1道',outAux:1,note:'手冊圖3.2-8明確另畫B主線分流口；它不是A出口下游的市區岔路。A/B入口的集散道連絡另列於下游匯入。'},
  {name:'爬坡道終點',km:'41K810',lanes:n1M(3),note:'爬坡道到官方終點才漸變併入；不因A或B出口消失，也不當成其後入口的加速車道。'},
  {name:'集散道回主線',km:'入口位置採示意',lanes:n1M(3),entry:'A/B入口經集散道接回',note:'市區入口與前段爬坡道各自獨立；動畫的入口口數與縱向位置為可調情境，不宣稱已取得當期施工標線圖。116年預定新高架匝道未當成已通車。'}]},
  elevated:{label:'高架五股—泰山',sources:['wiki','full','future'],nodes:[
@@ -764,11 +764,23 @@ function n1Svg(key){
   n.lanes.forEach((l,j)=>{const y=top+j*lh;parts.push(`<rect x="${x}" y="${y}" width="${roadw}" height="${lh-2}" fill="${colors[l.kind]}"/><text x="${x+9}" y="${y+15}" font-size="12" fill="${fg(l.kind)}">${j+1}　${esc(l.label)}</text><path d="M${x+roadw-26} ${y+10}h16l-5 -4m5 4l-5 4" fill="none" stroke="${fg(l.kind)}"/>`)});
   const bottom=top+n.lanes.length*lh;
   if(n.shoulder)parts.push(`<rect x="${x}" y="${bottom}" width="${roadw}" height="18" fill="url(#n1Shoulder)" stroke="#879c90" stroke-dasharray="4 3"/><text x="${x+6}" y="${bottom+13}" font-size="10" fill="#334b3e">路肩另管制・不計永久車道</text>`);
-  if(n.out){parts.push(`<path d="M${x+roadw-35} ${bottom-8}Q${x+roadw-3} ${bottom+32},${x+roadw+20} ${bottom+32}" stroke="#52645c" stroke-width="2" fill="none" marker-end="url(#n1Arrow)"/>`);parts.push(`<text x="${x}" y="315" font-size="11" fill="#344e40">${esc(n.out)}</text>`)}
-  if(n.entry){parts.push(`<path d="M${x-10} ${bottom+30}Q${x+30} ${bottom+30},${x+65} ${bottom-7}" stroke="#52645c" stroke-width="2" fill="none" marker-end="url(#n1Arrow)"/>`);parts.push(`<text x="${x}" y="337" font-size="11" fill="#344e40">${esc(n.entry)}</text>`)}
+  if(n.out){
+   const sources=n.outAux?Array.from({length:n.outAux},(_,j)=>n.lanes.length+j):(n.outLanes||[n.lanes.length-1]);
+   sources.forEach((lane,j)=>{const y=top+(lane+.5)*lh,targetY=Math.max(bottom+36,top+(sources.at(-1)+1.5)*lh)+j*10;
+    if(n.outAux){parts.push(`<rect x="${x+80}" y="${top+lane*lh}" width="${roadw-80}" height="${lh-2}" fill="${colors.aux}"/><text x="${x+85}" y="${top+lane*lh+15}" font-size="10" fill="#fff">出口 ${j+1} →</text>`)}
+    const path=`M${x+roadw-25} ${y}Q${x+roadw+4} ${targetY},${x+roadw+24} ${targetY}`;
+    if(n.outElevated)parts.push(`<path d="${path}" stroke="#f1f5f2" stroke-width="8" fill="none"/>`);
+    parts.push(`<path data-out-lane="${lane}" d="${path}" stroke="${n.outElevated?colors.elev:'#52645c'}" stroke-width="2.5" ${n.outElevated?'stroke-dasharray="5 3"':''} fill="none" marker-end="url(#n1Arrow)"/>`);
+   });
+   parts.push(`<text x="${x}" y="315" font-size="11" fill="#344e40">${esc(n.out)}</text>`);
+  }
+  if(n.entry){const map=n.map||n.lanes.map((_,l)=>prev&&l<prev.lanes.length?l:null),added=map.flatMap((v,j)=>v===null?[j]:[]),targets=added.length?added:[n.lanes.length-1];
+   targets.forEach((lane,j)=>{const y=top+(lane+.5)*lh,sy=bottom+30+j*12;parts.push(`<path data-entry-lane="${lane}" d="M${x-10} ${sy}Q${x+30} ${sy},${x+65} ${y}" stroke="#f1f5f2" stroke-width="6" fill="none"/><path d="M${x-10} ${sy}Q${x+30} ${sy},${x+65} ${y}" stroke="#52645c" stroke-width="2" fill="none" marker-end="url(#n1Arrow)"/>`)});
+   parts.push(`<text x="${x}" y="337" font-size="11" fill="#344e40">${esc(n.entry)}</text>`);
+  }
   if(i===n1NodeIndex)parts.push(`<rect x="${x-5}" y="94" width="${roadw+10}" height="${Math.max(90,n.lanes.length*lh+22)}" rx="5" stroke="#b77b25" stroke-width="3" fill="none"/>`);
  });
- parts.push('<text x="22" y="373" font-size="11" fill="#52645c">行駛方向 →　圖形不按地理比例；車道用途、分流及匯流關係依下列來源。點選下方路段查看細節。</text></svg>');return parts.join('');
+ parts.push('<text x="22" y="373" font-size="11" fill="#52645c">行駛方向 →　圖形不按地理比例；車道用途、分流及匯流關係依下列來源。紫色虛線＝立體轉接；點選下方路段查看細節。</text></svg>');return parts.join('');
 }
 function renderN1Plan(){
  const el=$('#n1Plan'),family=n1Family(),scope=$('#simScope');el.hidden=!family;scope.hidden=!family;
