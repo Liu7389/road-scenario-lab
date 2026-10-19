@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>body{margin:0}[hidden]{display:none!important}</style>
-<title>封閉式道路交通情境模擬器｜第八版</title>
+<title>封閉式道路交通情境模擬器</title>
 <style>
 /* Layout: road strip on top (the thing you watch), settings column + analysis column below, then A/B, report and assumptions. Freeway guide-sign green is the one accent. */
 :root{
@@ -179,12 +179,21 @@ textarea#report{width:100%;min-height:260px;font-family:ui-monospace,Menlo,Conso
     </div>
   </header>
   <section id="routeInfo" class="card" hidden aria-label="路徑配置與查核依據"></section>
-  <section class="card" aria-label="整合版說明">
-    <h2>道路情境實驗室 · 整合版</h2>
-    <p>第八版 2026.10.19・請從範例選單重新載入新版路線。先選範例 → 調整路段與需求 → 觀察瓶頸 → 保存 A／B 比較。整合 Claude 進階版與 ChatGPT 檢核修正；程式、樣式均在本檔，可離線操作。</p>
+  <section class="card" aria-label="使用說明">
+    <h2>道路情境實驗室</h2>
+    <p>先選範例 → 調整路段與需求 → 觀察瓶頸 → 保存 A／B 比較。程式、樣式均在本檔，可離線操作。</p>
+    <details class="note"><summary>更新紀錄</summary><ul>
+      <li>2026-10-19：兩車道以上的出入口匝道合併為一條匝道、只畫一個槽化線；大客車路肩改為內側實線邊線、外側不畫線，入口加速車道處路肩中斷。</li>
+      <li>2026-10-19：南港聯絡道入口車道與國3第4車道相連；大客車路肩從聯絡道入口一路畫到南港系統出口；南港系統國5入口2車道，內側加速車道較外側長約1 km；南港聯絡道全程畫出大客車路肩，彎道2縮1後路段為350 m。</li>
+      <li>2026-10-19：國3南下南港段改為3主線＋聯絡道入口延續的第4車道＋大客車路肩，於南港系統同時出口往國5；南港聯絡道改為2車道、橫科路入口（半套鑽石）匯入後2縮1、匝道儀控。</li>
+      <li>2026-10-19：國1汐五高架南向起點改為內3平面、外2高架；五股—泰山轉接道後為3主線＋外側2車道接爬坡道與路肩。</li>
+      <li>2026-10-19：市民高架共線段、台63全程、台65浮洲入口後改回單向3車道；南港大客車路肩流量只由大客車計算；林口開放路肩不分配大貨車；容量表註明含分流車道的容量。</li>
+      <li>2026-10-19：國3中和交流道改4車道；蘇花改武塔隧道速限50；南迴改草埔隧道大型車不得行駛內側車道。</li>
+      <li>2026-10-19：隧道跟車距離恢復依期望車速計算，避免雪隧前大量停等；開放路肩速限與主線分開設定。</li>
+    </ul></details>
     <p class="note">本作品為教學模型。未特別標註高架／橋梁或隧道的構造預設為路堤；這是建模預設，不能用來判定未查證道路的實際構造。地名範例的里程、速限、管制配置皆為情境輸入，未逐項驗證為現況。管理／養護體系只改變參考資料，不代表品質等級，也不直接改變容量。大型車用道政策、雨天係數、科技執法效果及水漂數值均為可調假設。</p>
-    <div class="toolrow"><button id="defaultCorridor" type="button">載入新版預設走廊（110／60）</button><button id="jsonSave" type="button">下載情境 JSON</button><button id="jsonLoad" type="button">匯入情境 JSON</button><input id="jsonFile" type="file" accept=".json,application/json" hidden><span id="jsonNote" role="status"></span></div>
-    <p class="note">預設走廊：所有路段一般車輛最高／最低速限 110／60 km/h、主線 3 車道；上坡另加爬坡車道。大貨車車種在本模型代表行照核定總重達 20 公噸者，預設 90／60 km/h，可逐段修改。若畫面保留上次設定，按上方按鈕載入新版預設。</p>
+    <div class="toolrow"><button id="defaultCorridor" type="button">載入預設走廊（110／60）</button><button id="jsonSave" type="button">下載情境 JSON</button><button id="jsonLoad" type="button">匯入情境 JSON</button><input id="jsonFile" type="file" accept=".json,application/json" hidden><span id="jsonNote" role="status"></span></div>
+    <p class="note">預設走廊：所有路段一般車輛最高／最低速限 110／60 km/h、主線 3 車道；上坡另加爬坡車道。大貨車車種在本模型代表行照核定總重達 20 公噸者，預設 90／60 km/h，可逐段修改。若畫面保留上次設定，按上方按鈕載入預設。</p>
     <p id="inputError" role="alert" hidden style="color:var(--bad);font-weight:700"></p>
   </section>
 
@@ -300,7 +309,7 @@ textarea#report{width:100%;min-height:260px;font-family:ui-monospace,Menlo,Conso
           <div class="toolrow" id="losCustom"></div>
         </div>
         <div class="tbl"><table id="segTable"></table></div>
-        <p class="note">需求／容量用到達該處的需求流率計算；通過流量受上游瓶頸限制。服務水準依道路類型章節判讀，不套用通用表。</p>
+        <p class="note">需求／容量用到達該處的需求流率計算；路段起點即有分流車道（如汐五高架起點、林口路肩、南港往國5車道）時，容量另含分流車道，表中以「含分流車道」註明，需求／容量以此計算。通過流量受上游瓶頸限制。服務水準依道路類型章節判讀，不套用通用表。</p>
       </section>
       <section class="card" aria-labelledby="h-safe">
         <h2 id="h-safe">車距、速限與水漂檢核</h2>
@@ -494,13 +503,14 @@ const PRESETS={
   xizhi:()=>xizhiRoute(false),
   xizhiElev:()=>xizhiRoute(true),
   nangang:()=>base({demand:3600,ffs:90,segments:[
-    realSeg(13.4,14,{name:'南港交流道・南下出口（往橫科路）',lanes:3,off:ramp('ic',250,1,250,0,{label:'南下出口→橫科路'}),partial:true,note:'依空拍：南下先在橫科路出口分流，之後才是南港聯絡道入口。'}),
-    realSeg(14,14.6,{name:'南港交流道・南港聯絡道入口匯入',lanes:3,on:ramp('ic',900,1,400,0,{label:'南港聯絡道入口（2縮1後1車道）'}),partial:true,note:'主線3車道；入口匝道由南港聯絡道2車道縮為1車道後，以加速車道匯入。'}),
-    realSeg(14.6,15.9,{name:'南港交流道—南港系統・3車道＋大客車專用路肩',lanes:3,off:ramp('sys',120,1,250,0,{label:'大客車專用路肩→國5南港系統',busOnly:true,auxFrom:0,auxLen:1300}),note:'依現場：一般車道3條；外側路肩自橫科入口起開放大客車，至南港系統匝道入口止，小型車不得使用。路肩大客車流量120輛／小時為教學假設。'}),
-    realSeg(15.9,16.5,{name:'國3南下・南港系統（接國5）',struct:'elevated',lanes:3,align:'curve',off:ramp('sys',600),on:ramp('sys',700,1,300),note:'南港系統出口往國5（一般車輛），大客車專用路肩於此出口前結束。轉接道車道數待標線圖核對。'})]}),
+    realSeg(14,14.6,{name:'南港交流道・南港聯絡道入口（第4車道＋大客車路肩延續）',lanes:3,on:ramp('ic',950,2,400,0,{label:'南港聯絡道入口（1車道＋大客車路肩）',continues:true,busSlots:[1]}),partial:true,note:'依現場：主線3車道；聯絡道入口的一般車道不併入，延續為第4車道；聯絡道的大客車路肩同時延續為國3外側路肩，直到南港系統出口。'}),
+    realSeg(14.6,15.9,{name:'南港交流道—南港系統・3主線＋第4車道＋大客車路肩',lanes:3,off:ramp('sys',737,2,250,0,{label:'第4車道＋大客車路肩→國5石碇／宜蘭',busSlots:[1],auxFrom:0,auxLen:1300}),note:'依現場門架：內側3車道往安坑／新店／木柵；第4車道與外側大客車路肩於南港系統同時出口往國5（2車道分流）。小型車不得使用路肩。'}),
+    realSeg(15.9,17.5,{name:'國3南下・南港系統（國5入口2車道）',struct:'elevated',lanes:3,align:'curve',on:ramp('sys',1100,2,300,0,{label:'國5→國3南下入口',accelSlots:[1300,300]}),note:'依現場：國5往國3南下入口與出口同為2車道；外側車道先併入內側（約300m），內側加速車道再延伸約1km後匯入主線。長度為示意。'})]}),
   nangangLink:()=>base({demand:1500,ffs:80,legalMode:'none',mix:{car:78,van:9,ltruck:6,bus:3,truck:4},segments:[
-    realSeg(0,1.2,{name:'南港聯絡道・直線2車道＋大客車路肩',struct:'elevated',lanes:2,limit:80,truckLimit:80,minLimit:0,truckMinLimit:0,note:'現場：2一般車道，外側路肩為大客車專用（分時開放），不列一般車道。直線速限80沿用前版，待現場標誌核對；此處里程為聯絡路徑相對里程，非國3里程。'}),
-    realSeg(1.2,2.8,{name:'南港聯絡道・彎道2縮1（南下入口）',struct:'elevated',lanes:1,align:'curve',limit:60,truckLimit:60,minLimit:0,truckMinLimit:0,note:'現場：彎道起點限速60，外側車道以縮減箭頭併入內側，成為1車道入口匝道；大客車路肩續行，接國3南下路肩。'})] }),
+    realSeg(0,1.0,{name:'南港聯絡道・2車道＋大客車路肩（環東分流後）',struct:'elevated',lanes:2,busShoulder:true,limit:80,truckLimit:80,minLimit:0,truckMinLimit:0,note:'現場：環東大道往國3車道經槽化線分流後為2一般車道，外側路肩限大客車（分時開放）。直線速限80沿用前版，待現場標誌核對；里程為聯絡路徑相對里程。'}),
+    realSeg(1.0,1.4,{name:'橫科路入口匯入（半套鑽石）',struct:'elevated',lanes:2,busShoulder:true,limit:80,truckLimit:80,minLimit:0,truckMinLimit:0,on:ramp('ic',300,1,200,0,{label:'橫科路入口'}),partial:true,note:'橫科為半套鑽石型交流道，往國3方向僅設入口；入口車流跨越大客車路肩匯入。入口流量300為教學假設。'}),
+    realSeg(1.4,1.6,{name:'入口匯入後・彎道前（外側車道縮減）',struct:'elevated',lanes:2,busShoulder:true,limit:60,truckLimit:60,minLimit:0,truckMinLimit:0,note:'現場：限速60標誌與外側車道縮減箭頭，外側車道於彎道起點前併入內側；大客車路肩隨之內移。'}),
+    realSeg(1.6,1.95,{name:'彎道2縮1・匝道儀控（1車道＋大客車路肩）',struct:'elevated',lanes:1,busShoulder:true,align:'curve',limit:60,truckLimit:60,minLimit:0,truckMinLimit:0,meter:1200,note:'現場：2縮1後約350m，1一般車道＋限大客車路肩，設匝道儀控（前方號誌）後匯入國3南下；路肩延續為國3外側大客車路肩至南港系統出口。儀控率1200輛／小時為教學假設；大客車走路肩不受儀控。'})] }),
   ankeng:()=>base({demand:4300,ffs:100,mix:{car:72,van:10,ltruck:8,bus:3,truck:7},segments:[
     realSeg(30.5,31.8,{name:'國3南下・安坑交流道（出口＋雙車道入口）',lanes:3,off:ramp('ic',650),on:ramp('ic',900,2,300),note:'入口以2車道建模；主線口是否再縮減、匯入後車道配置待現場標線圖核對。'}),
     realSeg(31.8,32.585,{name:'安坑交流道—安坑隧道（平坡高架）',struct:'elevated',lanes:3,grade:'level',gradePct:0,note:'依使用者提供的現地地圖與指正：進安坑隧道前為高架、平坡；移除先前虛設的3%上坡。'}),
@@ -534,9 +544,9 @@ const PRESETS={
     mkSeg({name:'連續彎道段',struct:'elevated',len:1.5,lanes:2,align:'multi',limit:70,minLimit:0,slowMark:true}),
     mkSeg({name:'匝道段',struct:'elevated',len:1.0,lanes:2,limit:70,minLimit:0,off:ramp('ic',350,1),on:ramp('ic',300,1,140)})]}),
   civic:()=>base({agency:'local',demand:2300,ffs:80,legalMode:'none',truckNoInner:false,mix:{car:86,van:10,ltruck:3,bus:1,truck:0},segments:[
-    regionalSeg({name:'市民高架東向・建國南路入口',struct:'elevated',len:.7,limit:80,truckLimit:80,on:ramp('ic',450,1,220,0,{label:'建國南路東向入口'}),partial:true,unit:'臺北市政府工務局新建工程處',note:'114.9官方匝道表：建國南路東向僅有入口；不能在同方向補出不存在的出口。長度與主線口1車道為情境假設。'}),
-    regionalSeg({name:'市民高架・建國—光復',struct:'elevated',len:1.8,limit:80,truckLimit:80,note:'採單向2主線、最高80；路段長度為選段示意。僅計算汽車主線，不模擬高架下的號誌。'}),
-    regionalSeg({name:'市民高架・光復南路出口',struct:'elevated',len:.7,limit:80,truckLimit:80,off:ramp('ic',600,1,250,0,{label:'光復南路東向出口'}),partial:true,note:'官方表：光復南路東向僅出口，西向僅入口；此處保留真實方向。'}),
+    regionalSeg({name:'市民高架東向・建國南路入口',struct:'elevated',len:.7,limit:80,truckLimit:80,on:ramp('ic',450,1,220,0,{label:'建國南路東向入口',continues:true}),partial:true,unit:'臺北市政府工務局新建工程處',note:'114.9官方匝道表：建國南路東向僅有入口；不能在同方向補出不存在的出口。長度與主線口1車道為情境假設。'}),
+    regionalSeg({name:'市民高架・建國—光復（共線段）',struct:'elevated',len:1.8,lanes:3,limit:80,truckLimit:80,note:'共線段單向3車道（入口車道延續）、最高80；路段長度為選段示意。僅計算汽車主線，不模擬高架下的號誌。'}),
+    regionalSeg({name:'市民高架・光復南路出口（共線段）',struct:'elevated',len:.7,lanes:3,limit:80,truckLimit:80,off:ramp('ic',600,1,250,0,{label:'光復南路東向出口'}),partial:true,note:'官方表：光復南路東向僅出口，西向僅入口；此處保留真實方向。'}),
     regionalSeg({name:'市民高架・光復—永吉',struct:'elevated',len:1,limit:80,truckLimit:80,align:'curve'}),
     regionalSeg({name:'市民高架・永吉路出口',struct:'elevated',len:.6,limit:80,truckLimit:80,off:ramp('ic',400,1,250,0,{label:'永吉路東向出口'}),partial:true,note:'東向永吉路為出口；不包含正氣橋後續分岔。匝道減速與市區號誌不列本主線模型。'})]}),
   danjiang:()=>base({agency:'thb',demand:2300,ffs:80,legalMode:'all',truckNoInner:false,segments:[
@@ -568,9 +578,9 @@ const PRESETS={
     realSeg(11.8,10.3,{name:'土城一・北上內側匝道群',struct:'elevated',lanes:2,limit:60,minLimit:0,truckLimit:60,truckMinLimit:0,off:ramp('ic',400,1,250,0,{side:'inner',label:'土城一北上出口'}),on:ramp('ic',500,1,260,0,{side:'inner',label:'土城一北上入口'}),note:'官方工程文獻說明北上內側進出；本例口數與輔助車道均為簡化，可依現況修改。'}),
     realSeg(10.3,9.1,{name:'城林橋附近高架・60區段',struct:'elevated',lanes:2,limit:60,minLimit:0,truckLimit:60,truckMinLimit:0}),
     realSeg(9.1,8.3,{name:'跨土城新興橋後・提速80',struct:'elevated',lanes:2,limit:80,minLimit:0,truckLimit:80,truckMinLimit:0,note:'公路局速限表以9K100為60／80分界，本段北上進入80區。'}),
-    realSeg(8.3,7.65,{name:'板橋二浮洲・北上外側入口',struct:'elevated',lanes:2,limit:80,minLimit:0,truckLimit:80,truckMinLimit:0,on:ramp('ic',450,1,250,0,{label:'浮洲北上入口'}),partial:true,note:'浮洲新增北入與南出功能依官方改善計畫；外側入口與縣民大道內側匝道分開，位置及口數仍為示意。'}),
-    realSeg(7.65,6.9,{name:'板橋二縣民大道・北上內側匝道群',struct:'elevated',lanes:2,limit:80,minLimit:0,truckLimit:80,truckMinLimit:0,off:ramp('ic',600,1,250,0,{side:'inner',label:'板橋二北上出口'}),on:ramp('ic',500,1,250,0,{side:'inner',label:'板橋二北上入口'}),note:'官方文獻圖1-3為內側匝道。主線口與出口專用車道的實際標線仍須現況圖核對，暫採2主線＋獨立輔助道。'}),
-    realSeg(6.9,6.2,{name:'板橋一・僅北上內側入口',struct:'elevated',lanes:2,limit:80,minLimit:0,truckLimit:80,truckMinLimit:0,on:ramp('ic',450,1,260,0,{side:'inner',label:'板橋一北上入口'}),partial:true,note:'板橋一方向性配置採南出北入；北上不設出口。本例到入口匯入後結束，車道配置與邊界待當期標線圖細核。'})]}),
+    realSeg(8.3,7.65,{name:'板橋二浮洲・北上外側入口',struct:'elevated',lanes:2,limit:80,minLimit:0,truckLimit:80,truckMinLimit:0,on:ramp('ic',450,1,250,0,{label:'浮洲北上入口',continues:true}),partial:true,note:'浮洲新增北入與南出功能依官方改善計畫；外側入口與縣民大道內側匝道分開，位置及口數仍為示意。'}),
+    realSeg(7.65,6.9,{name:'板橋二縣民大道・北上內側匝道群',struct:'elevated',lanes:3,limit:80,minLimit:0,truckLimit:80,truckMinLimit:0,off:ramp('ic',600,1,250,0,{side:'inner',label:'板橋二北上出口'}),on:ramp('ic',500,1,250,0,{side:'inner',label:'板橋二北上入口'}),note:'官方文獻圖1-3為內側匝道。主線口與出口專用車道的實際標線仍須現況圖核對，暫採2主線＋獨立輔助道。'}),
+    realSeg(6.9,6.2,{name:'板橋一・僅北上內側入口',struct:'elevated',lanes:3,limit:80,minLimit:0,truckLimit:80,truckMinLimit:0,on:ramp('ic',450,1,260,0,{side:'inner',label:'板橋一北上入口'}),partial:true,note:'板橋一方向性配置採南出北入；北上不設出口。本例到入口匯入後結束，車道配置與邊界待當期標線圖細核。'})]}),
   tai74:()=>base({agency:'thb',demand:3500,ffs:80,legalMode:'all',truckNoInner:false,segments:[
     regionalSeg({name:'台74東行・松竹交流道',struct:'elevated',len:1.2,lanes:3,limit:80,truckLimit:80,off:ramp('ic',550),on:ramp('ic',650,1,300),unit:'公路局中區養護工程分局',note:'選取松竹—太原—太平高架路段。官方建設資料：大衛路以北雙向6車道，按單向3主線建模；匝道口1暫估。長度採相對示意。'}),
     regionalSeg({name:'松竹—太原高架',struct:'elevated',len:1.8,lanes:3,limit:80,truckLimit:80,align:'curve'}),
@@ -578,11 +588,11 @@ const PRESETS={
     regionalSeg({name:'太原—太平高架',struct:'elevated',len:1.5,lanes:3,limit:80,truckLimit:80}),
     regionalSeg({name:'太平交流道（東行出口＋入口）',struct:'elevated',len:1.3,lanes:3,limit:80,truckLimit:80,off:ramp('ic',650),on:ramp('ic',700,1,300),note:'最高80依公路局現行表；未核實各匝道口與短增減車道，不標為實測車道配置。'})]}),
   tai63:()=>base({agency:'thb',demand:2400,ffs:70,legalMode:'none',truckNoInner:false,segments:[
-    regionalSeg({name:'台63南下・大里主線選段',len:1.5,limit:70,truckLimit:70,unit:'公路局中區養護工程分局員林工務段',note:'中投公路以省道封閉主線選段示意，不把路線編號或封閉特性直接當成法定快速公路資格；不自動套用第6條車距。'}),
-    regionalSeg({name:'大里一附近高架主線',struct:'elevated',len:1.2,limit:70,truckLimit:70,off:ramp('ic',400),on:ramp('ic',450,1,160),note:'路段確有高架伸縮縫與大里一南下出口；進出口以匝道群合併示意，口數及位置待標線圖核對。'}),
-    regionalSeg({name:'大里—霧峰封閉主線',len:2.5,align:'cst',limit:70,truckLimit:70,note:'未明確標註橋／隧構造者按使用者要求預設路堤；不代表已完成沿線橋梁普查。'}),
-    regionalSeg({name:'霧峰附近主線匝道群',len:1.2,limit:70,truckLimit:70,off:ramp('ic',500),on:ramp('ic',450,1,150),note:'本例不模擬國3中投交流道的完整立體動線；匝道群、短加速車道與需求均為教學假設。'}),
-    regionalSeg({name:'台63南下・往草屯方向續行',len:2,limit:70,truckLimit:70,note:'最高70參考公路局中投10.5K公告；不宣稱台63全線均為70，端點及其他區段請另依牌面設定。'})]}),
+    regionalSeg({lanes:3,name:'台63南下・大里主線選段',len:1.5,limit:70,truckLimit:70,unit:'公路局中區養護工程分局員林工務段',note:'中投公路以省道封閉主線選段示意，不把路線編號或封閉特性直接當成法定快速公路資格；不自動套用第6條車距。'}),
+    regionalSeg({lanes:3,name:'大里一附近高架主線',struct:'elevated',len:1.2,limit:70,truckLimit:70,off:ramp('ic',400),on:ramp('ic',450,1,160),note:'路段確有高架伸縮縫與大里一南下出口；進出口以匝道群合併示意，口數及位置待標線圖核對。'}),
+    regionalSeg({lanes:3,name:'大里—霧峰封閉主線',len:2.5,align:'cst',limit:70,truckLimit:70,note:'未明確標註橋／隧構造者按使用者要求預設路堤；不代表已完成沿線橋梁普查。'}),
+    regionalSeg({lanes:3,name:'霧峰附近主線匝道群',len:1.2,limit:70,truckLimit:70,off:ramp('ic',500),on:ramp('ic',450,1,150),note:'本例不模擬國3中投交流道的完整立體動線；匝道群、短加速車道與需求均為教學假設。'}),
+    regionalSeg({lanes:3,name:'台63南下・往草屯方向續行',len:2,limit:70,truckLimit:70,note:'最高70參考公路局中投10.5K公告；不宣稱台63全線均為70，端點及其他區段請另依牌面設定。'})]}),
   sys:()=>base({demand:4500,segments:[
     mkSeg({name:'路堤路段',len:2}),
     mkSeg({name:'系統交流道',len:2.2,off:ramp('sys',1200,2),on:ramp('sys',1500,2,400)}),
@@ -619,7 +629,7 @@ function wuguRoute(path){
     segs.push(
       (outer?realSeg(35.6,36.229,{name:'泰山轉接道後・平面匯合區',lanes:3,limit:100,on:outer?ramp('sys',2200,3,350):ramp('sys',800,2,350),note:'主線與分離輔助道在此以簡化合流模型表示，位置及流量皆假設，未模擬立體線形。'}):realSeg(35.6,36.229,{name:'泰山轉接道後・3主線＋外側2車道（接爬坡道、路肩）',lanes:5,limit:100,note:'依現場：泰山轉接道後為內側3主線＋外側2車道（原分離輔助道），兩組之間以雙白實線分隔；外側2車道往下游接續爬坡道與外側路肩（往林口）。模型一個路段只能設一種標線，此段以白虛線呈現。'})),
       // 36K220–40K400 outer shoulder opens 06–22 for cars and buses at 80 km/h; 林口-bound traffic uses it to stay clear of the climbing lane, so it is drawn as one long exit lane ending at 林口A
-      realSeg(36.229,41,{name:'泰山—林口上坡・3主線＋爬坡道＋路肩（林口A出口）',lanes:3,limit:100,climb:true,grade:'up',gradePct:3.5,off:ramp('ic',800,1,250,0,{label:'路肩→林口A・文化一路',auxFrom:0,auxLen:4500,shoulderLimit:80,downstreamLanes:4}),partial:true,note:'依高公局公告：南向36K220–40K400改為主線3車道＋爬坡道1車道＋外側路肩，路肩6–22時開放小型車及大客車、速限80（與主線100分開）；往林口車輛可提前駛入路肩，避免與爬坡道重車交織，本模型把路肩畫成延伸到林口A出口的外側車道，只有往林口的車使用。官方爬坡道36K229–41K810；坡度3.5%為假設。林口A匝道下游拓寬2→3→4，不是主線口車道數。'}),
+      realSeg(36.229,41,{name:'泰山—林口上坡・3主線＋爬坡道＋路肩（林口A出口）',lanes:3,limit:100,climb:true,grade:'up',gradePct:3.5,off:ramp('ic',800,1,250,0,{label:'路肩→林口A・文化一路',auxFrom:0,auxLen:4500,shoulderLimit:80,noTruck:true,downstreamLanes:4}),partial:true,note:'依高公局公告：南向36K220–40K400改為主線3車道＋爬坡道1車道＋外側路肩，路肩6–22時開放小型車及大客車、速限80（與主線100分開）；往林口車輛可提前駛入路肩，避免與爬坡道重車交織，本模型把路肩畫成延伸到林口A出口的外側車道，只有往林口的車使用。官方爬坡道36K229–41K810；坡度3.5%為假設。林口A匝道下游拓寬2→3→4，不是主線口車道數。'}),
       realSeg(41,41.6,{name:'林口B出口・文化北路（爬坡道延續）',lanes:3,limit:100,climb:true,grade:'up',gradePct:3.5,off:ramp('ic',400,1,250,0,{label:'林口B・文化北路'}),partial:true,note:'B出口主線口暫設1車道，未取得新版標線圖；A/B里程邊界為示意。共用入口在後段。'}),
       realSeg(41.6,41.810,{name:'林口交流道範圍・爬坡道至41K810',lanes:3,limit:100,climb:true,grade:'up',gradePct:3.5,note:'爬坡道獨立延續，不轉成入口加速車道。'}),
       realSeg(41.810,42.6,{name:'林口共用南下入口・爬坡道終點後（4車道）',lanes:4,limit:100,on:ramp('ic',600,2,300),partial:true,note:'此為A/B出口所屬交流道的入口；主線口2與示意位置待核對。爬坡道依官方里程已結束，入口另設加速車道。維基百科國1車道數表：泰山轉接道南—林口平面南下5車道（3主線＋爬坡道＋路肩）、林口—桃園平面南下4車道。'})
@@ -643,8 +653,8 @@ const ROUTE_META={
  shiding:{title:'國5南下：石碇—烏塗—彭山—坪林',text:'爬坡道僅在5K800–9K300連續存在，跨烏塗隧道；9K442才進彭山隧道。坡度先設4%供互動比較，不能從有爬坡道推定精確坡度。'},
  xizhi:{title:'國1南下：五堵→汐止→汐止系統→汐五端→東湖／內湖',text:'汐止系統在汐止交流道之後。汐五端提供平面、高架分支；東湖南下只有入口。',branches:['xizhi','xizhiElev']},
  xizhiElev:{title:'國1南下：汐止系統→汐五轉接道→汐五高架→堤頂',text:'選擇高架路徑，不會把東湖平面交流道接在高架上。轉接與匝道確切車道數／速限仍有待核對項目。',branches:['xizhi','xizhiElev']},
- nangang:{title:'國3南下：環東／南港交流道→南港系統',branches:['nangang','nangangLink'],text:'國3南下主線3車道、速限90；南港聯絡道車流以1車道入口匯入。外側路肩自橫科入口至南港系統匝道入口為大客車專用，小型車不得使用，模擬中只有大客車會駛入。可切換聯絡道情境觀察，兩種需求分開計算。'},
- nangangLink:{title:'環東東向→南港南下入口聯絡道',branches:['nangang','nangangLink'],text:'南港聯絡道2車道，外側路肩為大客車專用；彎道起點限速60並2縮1，成為1車道南下入口。此情境僅計算聯絡道，到國3匯入點為止；國3主線另由主線路徑計算。大客車路肩不列一般車道。'},
+ nangang:{title:'國3南下：環東／南港交流道→南港系統',branches:['nangang','nangangLink'],text:'國3南下主線3車道、速限90。南港聯絡道入口（儀控後1車道）不併入，延續為第4車道；外側路肩自入口起限大客車。到南港系統，第4車道與大客車路肩同時出口往國5，主線3車道續往木柵。可切換聯絡道情境，兩種需求分開計算。'},
+ nangangLink:{title:'環東東向→南港南下入口聯絡道',branches:['nangang','nangangLink'],text:'環東大道往國3車道分流後為南港聯絡道2車道（外側路肩限大客車）；橫科路入口匯入後，彎道限速60並2縮1，成為1車道＋大客車路肩，經匝道儀控匯入國3南下。此情境到國3匯入點為止。'},
  ankeng:{title:'國3南下：安坑交流道→平坡高架→安坑隧道→中和隧道→中和交流道',text:'進安坑隧道前已依現地指正改為平坡高架，取消虛設3%上坡。補齊兩座隧道及兩交流道進出口。35K以北90、以南100；兩入口先以雙車道模擬，主線口及合流後配置尚待當期標線圖核實。'},
  muzha:{title:'國3北上：木柵交流道→福德隧道→南深路出口→南港系統',text:'里程遞減，速限90。福德隧道在此範圍；木柵隧道在木柵交流道以南，不硬塞入本區間。南深路僅北出。'},
  wugu:{title:'國1南下：五股→泰山轉接道→林口（平面主線）',branches:['wugu','wuguAux','wuguElev']},
@@ -674,19 +684,19 @@ const REGIONAL_SOURCES={
  tai63Bridge:['公路局・台63高架伸縮縫與大里一南出','https://www.thb.gov.tw/News_Content_Table.aspx?n=7839&s=280285&sms=13275']
 };
 Object.assign(ROUTE_META,{
- civic:{title:'地方養護｜市民大道高架東向：建國→光復→永吉',text:'臺北市市民高架採最高80、單向2主線；官方表明建國東入、光復與永吉東出，故不為湊成雙向功能而補不存在的同向匝道。本模型未另模擬機車；高架下平面道路與號誌不列入主線容量。',sources:['civic','taipeiSpeed','civicCare']},
+ civic:{title:'地方養護｜市民大道高架東向：建國→光復→永吉',text:'臺北市市民高架採最高80；建國南路入口車道延續，建國—光復共線段為單向3車道，光復以東2車道；官方表明建國東入、光復與永吉東出，故不為湊成雙向功能而補不存在的同向匝道。本模型未另模擬機車；高架下平面道路與號誌不列入主線容量。',sources:['civic','taipeiSpeed','civicCare']},
  danjiang:{title:'公路局｜淡江大橋南向：淡水→八里',text:'台61一般汽車主線採單向2車道、最高80。機車、公車／預留輕軌、人行及自行車空間獨立，不加進一般容量；本例只模擬橋梁與引道選段，沒有繪入全部端點匝道。',sources:['speed','bridge']},
  suhua:{title:'公路局｜台9蘇花改南下：南澳→武塔→觀音／谷風→和平',text:'單向1一般車道，內側緊急救援／大客車優先空間不當成第2一般車道。125K576–143K802依官方公告採70／50，其餘端點另設降速；封閉式鼓音橋暫與觀音／谷風合併建模。車距按主管機關公告情境。',sources:['eastSpeed','suhua','tunnelKm','suhuaRoute']},
  nanhui:{title:'公路局｜台9南迴改南下：安朔→草埔森永隧道→草埔',text:'雙車道主線，安朔—草埔改善段採70／50，隧道出口437K600–438K005降為50。隧道禁止變換車道；本例僅涵蓋改善段，未把南迴公路全線視為封閉道路。',sources:['eastSpeed','nanhui','nanhuiKm']},
  tai1:{title:'地方受託養護｜台1線中山高架：三重→新莊選段',text:'道路編號屬省道，養護依實際委託關係歸地方體系。採單向2主線與已查測速點50；本例不聲稱涵蓋台1全線，也不把中山高架直接當成法定快速公路。',sources:['tai1Care','tai1Speed']},
- tai65:{title:'公路局｜台65北上：土城（國3轉接端）→板橋一',text:'里程遞減：土城端→土城二→土城一→板橋二浮洲／縣民大道→板橋一。9K100以南60、以北80。內側匝道與浮洲外側入口分別呈現；主線2車道＋輔助道採簡化配置，非每一處實際標線均已核實。',sources:['speed','tai65','fuzhou']},
+ tai65:{title:'公路局｜台65北上：土城（國3轉接端）→板橋一',text:'里程遞減：土城端→土城二→土城一→板橋二浮洲／縣民大道→板橋一。9K100以南60、以北80。內側匝道與浮洲外側入口分別呈現；主線2車道，浮洲入口車道延續後為單向3車道；匝道採簡化配置，非每一處實際標線均已核實。',sources:['speed','tai65','fuzhou']},
  tai74:{title:'公路局｜台74東行：松竹→太原→太平',text:'以北屯東側高架選段提供都會型省道快速公路範例，單向3主線、最高80；不把大衛路以南的雙向4車道配置誤套到這個選段。長度、匝道口數及需求仍可調整。',sources:['speed74','tai74']},
- tai63:{title:'公路局｜台63中投公路南下：大里→霧峰選段',text:'示範主線封閉、與側車道分離的省道路段，主線2車道，最高70為參考情境。高架另標、其餘預設路堤；匝道群與路段長度採簡化，不自動套用高速／快速公路第6條車距。',sources:['tai63','tai63Speed','tai63Bridge']}
+ tai63:{title:'公路局｜台63中投公路南下：大里→霧峰選段',text:'示範主線封閉、與側車道分離的省道路段，主線單向3車道，最高70為參考情境。高架另標、其餘預設路堤；匝道群與路段長度採簡化，不自動套用高速／快速公路第6條車距。',sources:['tai63','tai63Speed','tai63Bridge']}
 });
 function routeSources(sc){const m=ROUTE_META[sc.presetKey];return m?.sources?m.sources.map(k=>REGIONAL_SOURCES[k]):ROUTE_SOURCES}
 for(const [key,fn] of Object.entries(PRESETS))PRESETS[key]=()=>Object.assign(fn(),{presetKey:key,scenarioVersion:2026101904});
 function routeName(key){return({nangang:'國3南下主線',nangangLink:'環東聯絡道與南下入口',xizhi:'平面往東湖／內湖',xizhiElev:'汐五高架往堤頂',wugu:'內側3車道・平面主線',wuguAux:'外側2輔助道・往林口',wuguElev:'高架2＋泰山轉接1→3'})[key]||key}
-function rampText(r){return r.kind==='none'?'無':`${r.label|| (r.kind==='sys'?'系統轉接道':'匝道')}（${r.side==='inner'?'內側／左側':'外側／右側'}）：主線口 ${r.lanes} 車道${r.downstreamLanes?'；下游最多 '+r.downstreamLanes+' 車道':''}${r.continues?'；延續為主線車道':''}${r.busOnly?'；限大客車':''}`}
+function rampText(r){return r.kind==='none'?'無':`${r.label|| (r.kind==='sys'?'系統轉接道':'匝道')}（${r.side==='inner'?'內側／左側':'外側／右側'}）：主線口 ${r.lanes} 車道${r.downstreamLanes?'；下游最多 '+r.downstreamLanes+' 車道':''}${r.continues?'；延續為主線車道':''}${r.busOnly?'；限大客車':''}${r.busSlots?'；最外側路肩限大客車':''}${r.noTruck?'；限小型車及大客車':''}`}
 function renderRouteInfo(){
  const el=$('#routeInfo'),m=ROUTE_META[S.presetKey];el.hidden=!m;if(!m)return;
  const w=S.presetKey.startsWith('wugu');
@@ -746,7 +756,7 @@ function analyze(sc){
     SG.forEach((s,i)=>{const P={banCut:0,cutVeh:0,truckExit:0,share:0,offShare:0};
       if(s.truckBan&&cf.truck>0){P.cutVeh=cf.truck;P.banCut=cf.truck/Math.max(1e-9,tot());cf.truck=0}
       const t0=tot();P.mix={};VKEYS.forEach(k=>P.mix[k]=t0>0?cf[k]/t0:(s.truckBan?mixNT[k]:mix[k]));
-      if(hasOff(s)&&t0>0){P.share=Math.min(1,s.off.vol/phf/t0);VKEYS.forEach(k=>cf[k]*=1-P.share);if(banAhead(i)){P.truckExit=cf.truck;cf.truck=0}P.offShare=Math.min(1,P.share+P.truckExit/t0)}
+      if(hasOff(s)&&t0>0){const ok=k=>s.off.busOnly?k==='bus':!(s.off.noTruck&&k==='truck');const av=VKEYS.reduce((a,k)=>a+(ok(k)?cf[k]:0),0),ex=Math.min(s.off.vol/phf,av),r=av>0?ex/av:0;VKEYS.forEach(k=>{if(ok(k))cf[k]*=1-r});P.share=ex/t0; /* a bus-only or no-truck exit draws only from the classes allowed to use it */if(banAhead(i)){P.truckExit=cf.truck;cf.truck=0}P.offShare=Math.min(1,P.share+P.truckExit/t0)}
       P.onMix=s.truckBan||banAhead(i)?mixNT:mix;
       if(s.on&&s.on.kind!=='none'&&s.on.vol>0)VKEYS.forEach(k=>cf[k]+=s.on.vol/phf*P.onMix[k]);
       pre.push(P)})}
@@ -826,7 +836,7 @@ function analyze(sc){
       capLegalLane=3600*vOp/sp;
       if(mainOpen*capLegalLane<capMain){capMain=mainOpen*capLegalLane;cap=capMain+capClimb;legalBinding=true}
     }
-    const rows=L.total+Math.max(off&&off.side!=='inner'?off.lanes:0,on&&on.side!=='inner'?on.lanes:0);maxRows=Math.max(maxRows,rows);
+    const rows=L.total+(s.busShoulder?1:0)+Math.max(off&&off.side!=='inner'?off.lanes:0,on&&on.side!=='inner'?on.lanes:0);maxRows=Math.max(maxRows,rows);
     segs.push({i,src:s,wk,start:x*1000,end:(x+s.len)*1000,len:s.len,total:L.total,closed:L.closed,open:L.open,openSet:new Set(L.open),climbIdx:L.climbIdx,climbOpen,mainOpen,
       E,Em,ET,gradeRunLen,fHV,pcf,capLanePc,climbLanePc,capMain,capClimb,cap,ffs,desired,truckSp,busSp,merge,wCap,wFfs,hydro,follow,react,stop:react+brake,fric,legal,legalBinding,capLegalLane,tunnelRule,kJam,
       off,on,offCap,spill,onCap,accF,capMerge:cap*accF,meter:s.meter>0?s.meter:0,slowF,tech,mix,banCut:pre[i].banCut,cutVeh:pre[i].cutVeh,truckExit:pre[i].truckExit,offShareBase:pre[i].share,preOffShare:pre[i].offShare,onMix:pre[i].onMix});
@@ -843,7 +853,7 @@ function analyze(sc){
     if(g.meter>0&&!g.on){g.meterArrive=q;if(q>g.meter+1e-6){queues.push({seg:g.i,where:'meter',x:g.start,rate:q-g.meter,cap:g.meter,ramp:0});q=g.meter}}
     // a lane split (exit lanes running from the segment start, e.g. 汐五高架 start, 林口 shoulder) carries the exiting traffic outside the through lanes
     const capB=g.off&&g.src.off.auxFrom===0&&g.offShare<1?Math.min(g.cap/(1-g.offShare),g.cap+g.offCap):g.cap;
-    g.arrive=q;g.dc=q/capB;
+    g.capB=capB;g.arrive=q;g.dc=q/capB;
     // once a queue forms, the bottleneck discharges below its capacity (capacity drop)
     g.flow=q>capB+1e-6?capB*A.capDrop:q;g.dropped=q>capB+1e-6;
     if(g.dropped)queues.push({seg:g.i,where:'body',x:g.start,rate:q-g.flow,cap:g.flow,ramp:0});
@@ -1069,7 +1079,7 @@ function renderResults(){
   $('#capBars').innerHTML=rows.map(r=>`<div class="bar${r.m?' merge':''}"><span class="nm">${esc(r.nm)}</span><span class="track"><span class="fill${r.cap<r.arr-1?' hi':''}" style="width:${r.cap/maxV*100}%"></span><span class="dem" style="left:${Math.min(100,r.arr/maxV*100)}%"></span></span><span class="v">${fmt(r.cap)}</span></div>`).join('');
   $('#segTable').innerHTML=`<thead><tr><th>路段</th><th>開放／總車道</th><th>匝道</th><th>fHV</th><th>容量 veh/h</th><th>到達流率</th><th>需求／容量</th><th>通過流量</th><th>期望車速</th><th>估計車速</th><th>密度 pc/km/ln</th><th>服務水準</th><th>狀態</th></tr></thead><tbody>${segs.map(g=>{const[st,c]=status(g);
     const rp=[g.off?`出 ${fmt(g.offFlow)}${g.spill?'（回堵）':''}`:'',g.on?`入 ${fmt(g.onFlow)}${g.on.meter>0?`（儀控 ${fmt(g.on.meter)}）`:''}`:'',g.meter?`主線儀控 ${fmt(g.meter)}`:''].filter(Boolean).join('／')||'—';
-    return`<tr><td>${g.i+1}. ${esc(g.src.name)}${g.src.unit?`<br><span class="note">${esc(g.src.unit)}</span>`:''}</td><td>${g.open.length}／${g.total}${g.climbOpen?'（含爬坡）':''}</td><td>${rp}</td><td>${fmt(g.fHV,3)}<br><span class="note">大貨車 ${fmt(g.mix.truck*100,1)}%</span></td><td>${fmt(g.cap)}</td><td>${fmt(g.arrive)}</td><td class="${g.dc>1?'hi':g.dc>0.9?'mid':''}">${fmt(g.dc,2)}${g.on?`<br><span class="note ${g.dcMerge>1?'hi':''}">匯入 ${fmt(g.dcMerge,2)}</span>`:''}</td><td>${fmt(g.flow)}</td><td>${fmt(g.desired)}</td><td>${g.queueKm>0.01?`${fmt(g.avgSpeed)}<br><span class="note">回堵 ${fmt(Math.min(g.len,g.queueKm),2)} km</span>`:fmt(g.speed)}</td><td>${fmt(g.densityPc,1)}</td><td>${g.los||'—'}</td><td><span class="pill ${c}">${st}</span></td></tr>`}).join('')}</tbody>`;
+    return`<tr><td>${g.i+1}. ${esc(g.src.name)}${g.src.unit?`<br><span class="note">${esc(g.src.unit)}</span>`:''}</td><td>${g.open.length}／${g.total}${g.climbOpen?'（含爬坡）':''}</td><td>${rp}</td><td>${fmt(g.fHV,3)}<br><span class="note">大貨車 ${fmt(g.mix.truck*100,1)}%</span></td><td>${fmt(g.cap)}${g.capB>g.cap+1?`<br><span class="note">含分流車道 ${fmt(g.capB)}</span>`:''}</td><td>${fmt(g.arrive)}</td><td class="${g.dc>1?'hi':g.dc>0.9?'mid':''}">${fmt(g.dc,2)}${g.on?`<br><span class="note ${g.dcMerge>1?'hi':''}">匯入 ${fmt(g.dcMerge,2)}</span>`:''}</td><td>${fmt(g.flow)}</td><td>${fmt(g.desired)}</td><td>${g.queueKm>0.01?`${fmt(g.avgSpeed)}<br><span class="note">回堵 ${fmt(Math.min(g.len,g.queueKm),2)} km</span>`:fmt(g.speed)}</td><td>${fmt(g.densityPc,1)}</td><td>${g.los||'—'}</td><td><span class="pill ${c}">${st}</span></td></tr>`}).join('')}</tbody>`;
   $('#safeTable').innerHTML=`<thead><tr><th>路段</th><th>天候</th><th>一般車最高／最低</th><th>20噸以上大貨車最高／最低（有效上限）</th><th>期望車速</th><th>大貨車／大客車</th><th>跟車距離 m</th><th>車距模型 小型／大型 m</th><th>反應距離 m</th><th>停車距離 m</th><th>水膜 mm</th><th>假設水漂臨界 km/h</th><th>水漂敏感度</th><th>情境降速值</th></tr></thead><tbody>${segs.map(g=>{const s=g.src,h=g.hydro;const lowT=s.truckMinLimit>0&&g.truckSp<s.truckMinLimit,lowB=s.minLimit>0&&g.busSp<s.minLimit;
     return`<tr><td>${g.i+1}. ${esc(s.name)}</td><td>${s.struct==='tunnel'?'隧道內不受影響':LBL.weather[g.wk]}</td><td>${s.limit}／${s.minLimit||'未設定'}</td><td>${s.truckLimit}／${s.truckMinLimit||'未設定'}<br><span class="note">有效最高 ${Math.min(s.limit,s.truckLimit)}</span></td><td>${fmt(g.desired)}</td><td><span class="${lowT?'hi':''}">${fmt(g.truckSp)}</span>／<span class="${lowB?'hi':''}">${fmt(g.busSp)}</span></td><td class="${g.follow<g.legal.dCar?'hi':''}">${fmt(g.follow)}</td><td>${fmt(g.legal.dCar)}／${fmt(g.legal.dHeavy)}<br><span class="note">${esc(g.legal.basis)}${g.legal.enforced?'・納入容量':''}${g.legalBinding?'・<span class="hi">決定容量</span>':''}</span></td><td>${fmt(g.react)}</td><td>${fmt(g.stop)}</td><td>${h?fmt(h.film,1):'—'}</td><td>${h?fmt(h.vCar):'—'}</td><td>${h?`<span class="pill ${h.level==='高'?'hi':h.level==='中'?'mid':'ok'}">${h.level}</span>`:'—'}</td><td>${h?h.rec+' km/h':'—'}</td></tr>`}).join('')}</tbody>`;
   $('#warnList').innerHTML=warnings(S,R).map(t=>`<li>${esc(t)}</li>`).join('');
@@ -1180,7 +1190,7 @@ function validateState(sc){
     for(const k of ['struct','align','grade','marking','wzSide'])if(!Object.hasOwn(LBL[k],s[k]))e.push(n+k+'選項無效');
     if(!Object.hasOwn(LBL.segWeather,s.weather))e.push(n+'天候無效');
     for(const k of ['off','on']){const r=s[k];if(!r){e.push(n+'缺少匝道設定');continue}if(!['none','ic','sys'].includes(r.kind))e.push(n+'匝道類型無效');check(r.vol,0,30000,n+'匝道量');check(r.lanes,1,4,n+'匝道車道');check(r.meter,0,30000,n+'匝道儀控');check(r.accel,0,600,n+'加速車道');if(!Number.isInteger(r.lanes))e.push(n+'匝道車道必須為整數');if(r.downstreamLanes!=null){check(r.downstreamLanes,0,8,n+'下游拓寬車道');if(!Number.isInteger(r.downstreamLanes))e.push(n+'下游拓寬車道須為整數')}if(r.label!=null&&(typeof r.label!=='string'||r.label.length>160))e.push(n+'匝道名稱無效');if(!['inner','outer'].includes(r.side))e.push(n+'匝道側別無效');if(r.continues&&r.side==='inner')e.push(n+'本模型僅支援外側入口延續為新增主線，內側新增須另建路徑');if(r.continues!=null&&typeof r.continues!=='boolean')e.push(n+'匝道延續須為布林值')}
-    if(s.on?.continues&&s.on.kind!=='none'&&(!sc.segments[i+1]||sc.segments[i+1].lanes<s.lanes+s.on.lanes))e.push(n+'入口延續須在下一路段增加相應主線車道');if(!['auto','posted'].includes(s.distanceRule))e.push(n+'車距依據選項無效');if(s.note!=null&&(typeof s.note!=='string'||s.note.length>1200))e.push(n+'路段依據註記無效');if(s.kmStart!=null&&(!Number.isFinite(s.kmStart)||!Number.isFinite(s.kmEnd)))e.push(n+'里程無效');
+    if(s.on?.continues&&s.on.kind!=='none'&&(!sc.segments[i+1]||sc.segments[i+1].lanes<s.lanes+s.on.lanes)&&!(sc.segments[i+1]?.off?.auxFrom===0&&sc.segments[i+1].off.lanes>=s.on.lanes))e.push(n+'入口延續須在下一路段增加相應主線車道');if(!['auto','posted'].includes(s.distanceRule))e.push(n+'車距依據選項無效');if(s.note!=null&&(typeof s.note!=='string'||s.note.length>1200))e.push(n+'路段依據註記無效');if(s.kmStart!=null&&(!Number.isFinite(s.kmStart)||!Number.isFinite(s.kmEnd)))e.push(n+'里程無效');
     if(typeof s.partial!=='boolean')e.push(n+'單向例外須為布林值');if(!s.partial&&((s.off.kind==='ic')!==(s.on.kind==='ic')))e.push(n+'一般交流道須同時配置入口與出口，或註明單向／跨段例外');
     if(typeof s.name!=='string'||s.name.length>160||typeof s.unit!=='string'||s.unit.length>160)e.push(n+'名稱或註記過長');
   });return [...new Set(e)];
@@ -1282,9 +1292,16 @@ function simOnModelChange(){
   geo.segs.forEach(g=>{
     g.aux=[];bps.push(g.start);
     const nc=Math.max(0,g.src.cams|0),nt=Math.max(0,g.src.tech|0);g.camX=[...Array(nc)].map((_,k)=>g.start+(k+0.5)*(g.end-g.start)/nc);g.techX=[...Array(nt)].map((_,k)=>g.start+(k+0.5)*(g.end-g.start)/nt);g.mainOpenAtStop=Math.max(1,g.open.length-(g.climbOpen?1:0));
-    const lane=g.total,len=g.end-g.start;
-    if(g.off){const x0=g.off.auxFrom!=null?g.start+g.off.auxFrom:g.start+(g.i===0?Math.min(500,len*.3):Math.min(150,len*.1)),x1=g.off.auxLen?Math.min(g.end-50,x0+g.off.auxLen):x0+Math.min(250,len*.24);for(let j=0;j<g.off.lanes;j++)g.aux.push({kind:'decel',lane:g.off.side==='inner'?-1-j:lane+j,side:g.off.side,slot:j,x0,x1,seg:g.i,busOnly:!!g.off.busOnly,id:'d'+g.i+'-'+j})}
-    if(g.on){for(let j=0;j<g.on.lanes;j++){const x1=g.on.continues?g.end:g.end-Math.min(100,len*.08)-j*Math.min(50,len*.04),x0=Math.max(g.start+(g.off?len*.55:Math.min(60,len*.1)),x1-Math.min(g.on.accel,len*.35));g.aux.push({kind:'accel',lane:g.on.side==='inner'?-1-j:lane+j,side:g.on.side,slot:j,continues:!!g.on.continues,x0,x1,seg:g.i,id:'a'+g.i+'-'+j})}}
+    const bsh=!!g.src.busShoulder,lane=g.total,len=g.end-g.start;g.busIdx=bsh?g.total:null;
+    const pv0=geo.segs[g.i-1];
+    if(g.off){const x0=g.off.auxFrom!=null?g.start+g.off.auxFrom:g.start+(g.i===0?Math.min(500,len*.3):Math.min(150,len*.1)),x1=g.off.auxLen?Math.min(g.end-50,x0+g.off.auxLen):x0+Math.min(250,len*.24);for(let j=0;j<g.off.lanes;j++){const ln=g.off.side==='inner'?-1-j:lane+j;g.aux.push({kind:'decel',lane:ln,side:g.off.side,slot:j,x0,x1,seg:g.i,busOnly:!!g.off.busOnly||(g.off.busSlots||[]).includes(j),noTruck:!!g.off.noTruck,fromPrev:g.off.auxFrom===0&&!!pv0?.aux.some(a=>a.kind==='accel'&&a.continues&&a.lane===ln),id:'d'+g.i+'-'+j})}}
+    if(g.on){for(let j=0;j<g.on.lanes;j++){let x1=g.on.continues?g.end:g.end-Math.min(100,len*.08)-j*Math.min(50,len*.04),x0=Math.max(g.start+(g.off?len*.55:Math.min(60,len*.1)),x1-Math.min(g.on.accel,len*.35));
+      if(g.on.accelSlots){x0=g.start+Math.min(60,len*.1);x1=Math.min(g.end-20,x0+g.on.accelSlots[j])} // per-lane acceleration lengths (e.g. inner ramp lane runs ~1 km farther)
+      g.aux.push({kind:'accel',lane:g.on.side==='inner'?-1-j:lane+j,side:g.on.side,slot:j,continues:!!g.on.continues,busOnly:(g.on.busSlots||[]).includes(j),x0,x1,seg:g.i,id:'a'+g.i+'-'+j})}}
+    // bus-only shoulder: an outer strip that is interrupted where an outer ramp's speed-change lane takes its place
+    if(bsh){const cut=g.aux.filter(a=>a.lane===g.total&&a.side!=='inner').map(a=>[a.x0,a.x1]).sort((p,q)=>p[0]-q[0]);let x=g.start,k=0;
+      for(const [c0,c1] of cut){if(c0-x>20)g.aux.push({kind:'bus',lane:g.total,side:'outer',slot:-1,x0:x,x1:c0,seg:g.i,id:'b'+g.i+'-'+k++});x=Math.max(x,c1-60)}
+      if(g.end-x>20)g.aux.push({kind:'bus',lane:g.total,side:'outer',slot:-1,x0:x,x1:g.end,seg:g.i,id:'b'+g.i+'-'+k++})}
     const prev=geo.segs[g.i-1];g.climbFromPrev=!!(g.climbOpen&&prev?.climbOpen&&prev.climbIdx===g.climbIdx);g.climbToNext=!!(g.climbOpen&&geo.segs[g.i+1]?.climbOpen&&geo.segs[g.i+1].climbIdx===g.climbIdx);
     // mainline meter: stop line on the mainline upstream of the entrance-ramp merge (after any exit ramp); without an entrance ramp it sits at the segment start
     {const ac=g.aux.find(a=>a.kind==='accel'),dc=g.aux.find(a=>a.kind==='decel');g.stopX=!g.meter?null:ac?Math.max(dc?dc.x1+60:g.start+(g.i===0?250:60),ac.x0-150):g.start+(g.i===0?250:60)}
@@ -1320,9 +1337,10 @@ function laneAvail(lane,x){
   const c=g.closeFrom&&g.closeFrom[lane];if(c!=null&&lane<g.total&&x<c+g.taper*0.5)return true;
   return !!auxAt(lane,x,g);
 }
-function nextEnd(lane,x,look){
+function barred(v,lane,x){const a=v&&auxAt(lane,x,geo.segs[segAt(x)]);return !!a&&((a.noTruck&&v.cls==='truck')||((a.busOnly||a.kind==='bus')&&v.cls!=='bus'))} // class-restricted shoulder ahead
+function nextEnd(lane,x,look,v){
   if(!laneAvail(lane,x))return{x,here:true};
-  for(const bp of geo.bps){if(bp<=x)continue;if(bp-x>look)break;if(!laneAvail(lane,bp+0.01))return{x:bp}}
+  for(const bp of geo.bps){if(bp<=x)continue;if(bp-x>look)break;if(!laneAvail(lane,bp+0.01)||barred(v,lane,bp+0.01))return{x:bp}}
   return null;
 }
 function canCross(mk,dir){return mk==='dash'||(mk==='dashOuter'&&dir<0)||(mk==='dashInner'&&dir>0)}
@@ -1336,7 +1354,9 @@ function usable(v,lane,x,ovt){
     return true;
   }
   const a=auxAt(lane,x,g);if(!a)return false;
+  if(a.kind==='bus')return v.cls==='bus'||v.entrySeg===g.i||!!(v.exit&&v.exit.seg===g.i); // ramp traffic may cross the bus shoulder
   if(a.kind==='decel')return !!(v.exit&&v.exit.seg===a.seg)&&(!a.busOnly||v.cls==='bus');
+  if(a.busOnly&&v.cls!=='bus')return false;
   return (a.side==='inner'?v.lane<=lane:v.lane>=lane)&&v.entrySeg===g.i; // on-ramp traffic may merge successively through its auxiliary lanes
 }
 function boundaryMark(g,lane,dir,x){
@@ -1382,8 +1402,8 @@ function neighbors(arr,x,self){let lead=null,fol=null;if(!arr)return{lead,fol};f
 function pickClass(m){m=m||R.mix0;let r=rng();for(const k of VKEYS){r-=m[k];if(r<=0)return k}return'car'}
 function assignExit(x,cls){
   // a heavy truck heading for a segment that bans it takes the last exit before that segment
-  if(cls==='truck'){const ban=geo.segs.find(g=>g.src.truckBan&&g.start>=x);if(ban){let ex=null;for(const g of geo.segs)for(const a of g.aux)if(a.kind==='decel'&&a.x0>=x+60&&a.x0<ban.start)ex=a;return ex}}
-  for(const g of geo.segs){const exits=g.aux.filter(a=>a.kind==='decel'&&a.x0>=x+300&&(!a.busOnly||cls==='bus'));const bo=exits.length&&exits[0].busOnly;if(exits.length&&rng()<(bo?Math.min(1,g.offShareBase/Math.max(0.005,R.mix0.bus)):g.offShareBase))return exits[Math.floor(rng()*exits.length)]}return null} // a bus-only shoulder takes only buses, so its share is drawn from the bus fraction
+  if(cls==='truck'){const ban=geo.segs.find(g=>g.src.truckBan&&g.start>=x);if(ban){let ex=null;for(const g of geo.segs)for(const a of g.aux)if(a.kind==='decel'&&!a.noTruck&&!a.busOnly&&a.x0>=x+60&&a.x0<ban.start)ex=a;return ex}}
+  for(const g of geo.segs){let exits=g.aux.filter(a=>a.kind==='decel'&&(a.x0>=x+300||(a.fromPrev&&a.x0>=x))&&(!a.busOnly||cls==='bus')&&!(a.noTruck&&cls==='truck'));if(!exits.length)continue;const all=exits.every(a=>a.busOnly),nt=exits.every(a=>a.noTruck);if(cls==='bus'&&exits.some(a=>a.busOnly))exits=exits.filter(a=>a.busOnly);if(rng()<(all?Math.min(1,g.offShareBase/Math.max(0.005,R.mix0.bus)):nt?Math.min(1,g.offShareBase/Math.max(0.005,1-R.mix0.truck)):g.offShareBase))return exits[Math.floor(rng()*exits.length)]}return null} // bus-only shoulders take only buses; an all-bus exit draws its share from the bus fraction
 function newVeh(x,lane,cls,slow){const p=VC[cls];return{x,lane,cls,len:p.len,f:0.92+rng()*0.16,v:0,acc:0,lc:rng(),born:sim.t,slow:!!slow,exit:assignExit(x,cls),off:null,rc:rng(),coop:rng()<0.67,mreq:null,mwait:0}}
 function trySpawn(L,x,lanes,veh,minSpeed){
   let best=null,bestGap=-1;
@@ -1419,15 +1439,17 @@ function step(dt){
   // on-ramp arrivals
   for(const g of segs)for(const a of g.aux){
     if(a.kind!=='accel')continue;
-    sim.rampAcc[a.id]=(sim.rampAcc[a.id]||0)+dt*(g.on.vol/phf/g.on.lanes)/3600*(0.4+rng()*1.2);
+    const bsl=g.on.busSlots,bsh=bsl?(a.busOnly?g.onMix.bus:(1-g.onMix.bus)/Math.max(1,g.on.lanes-bsl.length)):1/g.on.lanes;
+    sim.rampAcc[a.id]=(sim.rampAcc[a.id]||0)+dt*(g.on.vol/phf*bsh)/3600*(0.4+rng()*1.2);
     while(sim.rampAcc[a.id]>=1){sim.rampAcc[a.id]-=1;sim.rampBack[a.id]=(sim.rampBack[a.id]||0)+1}
     // a ramp meter releases one vehicle per green at the metering rate; held vehicles still enter, just later
     const mt=g.on.meter>0;if(mt)sim.rampTok[a.id]=Math.min(1,(sim.rampTok[a.id]||0)+dt*g.on.meter/g.on.lanes/3600);
-    if(sim.rampBack[a.id]>0&&(!mt||sim.rampTok[a.id]>=1)){const cls=pickClass(g.onMix);const veh=newVeh(a.x0,a.lane,cls,false);veh.lane=a.lane;veh.entrySeg=g.i;if(trySpawn(L,a.x0,[a.lane],veh,Math.min(60,g.desired)/3.6)){sim.rampBack[a.id]--;sim.rampIn[a.id]=(sim.rampIn[a.id]||0)+1;if(mt){sim.rampTok[a.id]-=1;sim.rampGreen[a.id]=sim.t}}}
+    if(sim.rampBack[a.id]>0&&(!mt||sim.rampTok[a.id]>=1)){const cls=a.busOnly?'bus':bsl?pickClass(Object.assign({},g.onMix,{bus:0})):pickClass(g.onMix);const veh=newVeh(a.x0,a.lane,cls,false);veh.lane=a.lane;veh.entrySeg=g.i;if(a.busOnly){const nx=segs[g.i+1],d=nx&&nx.aux.find(b=>b.kind==='decel'&&b.busOnly&&b.lane===a.lane);if(d)veh.exit=d}if(trySpawn(L,a.x0,[a.lane],veh,Math.min(60,g.desired)/3.6)){sim.rampBack[a.id]--;sim.rampIn[a.id]=(sim.rampIn[a.id]||0)+1;if(mt){sim.rampTok[a.id]-=1;sim.rampGreen[a.id]=sim.t}}}
   }
   // lane changes
   for(const v of sim.vehs){
     if(v.off)continue;
+    {const gb=segs[segAt(v.x)];if(gb.busIdx!=null&&v.lane>gb.busIdx&&!auxAt(v.lane,v.x,gb))v.lane=gb.busIdx} // bus shoulder shifts inward after a lane drop
     v.lc-=dt;if(v.lc>0)continue;v.lc=0.6+rng()*0.5;
     const si=segAt(v.x),g=segs[si],p=VC[v.cls];
     let dir=0,mand=false,dist=1e9;
@@ -1435,7 +1457,7 @@ function step(dt){
     const nearest=(ls)=>ls.length?ls.reduce((a,l)=>Math.abs(l-v.lane)<Math.abs(a-v.lane)?l:a,ls[0]):null;
     if(v.exit&&v.x>v.exit.x1+1)v.exit=null;
     if(v.exit&&v.lane===v.exit.lane&&v.x>=v.exit.x0-1){v.mreq=null;continue} // already in the deceleration lane (an acceleration lane upstream may share its lane index)
-    const end=nextEnd(v.lane,v.x,650);
+    const end=nextEnd(v.lane,v.x,650,v);
     if(v.exit&&v.x>=v.exit.x0-1500){
       mand=true;
       if(v.x>=v.exit.x0){dir=Math.sign(v.exit.lane-v.lane);dist=v.exit.x1-v.x}
@@ -1470,7 +1492,7 @@ function step(dt){
       const nl=v.lane+d;
       const ok=usable(v,nl,v.x,d<0&&!mand&&heavy(v))||(mand&&laneAvail(nl,v.x)&&!(auxAt(nl,v.x,g)&&auxAt(nl,v.x,g).kind==='accel'));
       if(!ok)continue;
-      if(!mand){const e2=nextEnd(nl,v.x,500);if(e2)continue}
+      if(!mand){const e2=nextEnd(nl,v.x,500,v);if(e2)continue}
       const taper=mand&&laneEnds&&(dist<300||!laneAvail(v.lane,v.x));
       if(!canCross(boundaryMark(g,v.lane,d,v.x),d)&&!taper)continue;
       const{lead,fol}=neighbors(L.get(nl),v.x,null);
@@ -1511,7 +1533,7 @@ function step(dt){
         if(dS<v.v*v.v/3+25){const key=gm.i+':'+lane,hw=gm.mainOpenAtStop*3600/gm.meter;if(sim.t>=(sim.meterNext[key]||0)){v.mpass=gm.i;sim.meterNext[key]=sim.t+hw;continue}}
         a=Math.min(a,idmAcc(v.v,v0,dS-1,v.v,p,p.T))}
       const isExitLane=v.exit&&lane===v.exit.lane&&v.x>=v.exit.x0-1;
-      if(!isExitLane){const end=nextEnd(lane,v.x,600);if(end&&!end.here)a=Math.min(a,idmAcc(v.v,v0,end.x-v.x-1,v.v,p,p.T));else if(end&&end.here)a=Math.min(a,-4)} // past the end of its lane: stop and wait to merge
+      if(!isExitLane){const end=nextEnd(lane,v.x,600,v);if(end&&!end.here)a=Math.min(a,idmAcc(v.v,v0,end.x-v.x-1,v.v,p,p.T));else if(end&&end.here)a=Math.min(a,-4)} // past the end of its lane: stop and wait to merge
       v.acc=Math.max(-9,a);
     }
   }
@@ -1611,25 +1633,60 @@ function draw(){
       const ax0=X(a.x0),ax1=X(a.x1),y=roadTop+a.lane*LANE_H,tl=Math.min(80*sc,(ax1-ax0)*.4),rl=rampLen(a,sc);
       const inner=a.side==='inner',mirrorY=v=>inner?2*y+LANE_H-v:v;if(inner){ctx.save();ctx.translate(0,2*y+LANE_H);ctx.scale(1,-1)}
       ctx.fillStyle=C.aux;
-      if(a.kind==='decel'){
-        poly([[ax0,y],[ax0+tl,y+LANE_H],[ax1,y+LANE_H],[ax1,y]],C.aux);
+      if(a.kind==='bus'){
+        const nx=geo.segs[g.i+1],d=Object.values(g.drops)[0],shift=a.x1>=g.end-1&&nx&&nx.busIdx!=null&&nx.busIdx<g.busIdx&&d;
+        const pts=shift?[[ax0,y],[X(d.xs),y],[X(d.xe),y-LANE_H],[ax1,y-LANE_H],[ax1,y],[X(d.xe),y+LANE_H-LANE_H],[X(d.xs),y+LANE_H],[ax0,y+LANE_H]]:[[ax0,y],[ax1,y],[ax1,y+LANE_H],[ax0,y+LANE_H]];
+        if(shift)poly([[ax0,y],[X(d.xs),y],[X(d.xe),y-LANE_H],[ax1,y-LANE_H],[ax1,y],[X(d.xs),y+LANE_H],[ax0,y+LANE_H]],C.aux);else poly(pts,C.aux);
+        // the shoulder is separated from the travel lane by the solid edge line; its outer side is the barrier, with no marking
+        ctx.strokeStyle=C.mark;ctx.lineWidth=1.2;ctx.beginPath();if(shift){ctx.moveTo(ax0,y);ctx.lineTo(X(d.xs),y);ctx.lineTo(X(d.xe),y-LANE_H);ctx.lineTo(ax1,y-LANE_H)}else{ctx.moveTo(ax0,y);ctx.lineTo(ax1,y)}ctx.stroke();
+        if(sc>0.2){ctx.fillStyle=C.mark;ctx.globalAlpha=.8;ctx.font='600 10px "Noto Sans TC",sans-serif';for(let xm=a.x0+120;xm<a.x1-120;xm+=400){const px=X(xm);if(px>-60&&px<W&&!(shift&&xm>d.xs-60))ctx.fillText('路肩・限大客車',px,y+LANE_H/2+0.5)}ctx.globalAlpha=1}
+      }else if(a.kind==='decel'&&!inner&&g.off.lanes>1){
+        // multi-lane exit: the lanes leave side by side as one ramp, so there is a single gore (channelizing area) at the inner edge
+        const n=g.off.lanes,j=a.slot,H=n*LANE_H,tl2=a.fromPrev?0:Math.max(0,Math.min(tl,(ax1-6-H*0.8-ax0)/n)),s0=ax0+j*tl2,last=j===n-1,bus=a.busOnly;
+        poly([[s0,y],[s0+tl2,y+LANE_H],[ax1,y+LANE_H],[ax1,y]],C.aux);
+        ctx.strokeStyle=C.mark;ctx.lineWidth=1.2;
+        if(j===0){poly([[ax1-6,y],[ax1+rl,y+RAMP_H-6],[ax1+rl,y+RAMP_H-6+H],[ax1-6-H*0.8,y+H]],C.aux);
+          const gore=[[ax1,y],[ax1+rl,y],[ax1+rl,y+RAMP_H-6]];poly(gore,C.grass);hatch(gore,C.mark,8);
+          hline(ax0+tl2,ax1,y,thickP,thickOff);ctx.beginPath();ctx.moveTo(ax1,y);ctx.lineTo(ax1+rl,y+RAMP_H-6);ctx.stroke();
+          for(let k=1;k<n;k++){ctx.save();ctx.setLineDash([6,8]);ctx.beginPath();ctx.moveTo(ax1-6-k*LANE_H*0.8,y+k*LANE_H);ctx.lineTo(ax1+rl,y+RAMP_H-6+k*LANE_H);ctx.stroke();ctx.restore()}
+          ctx.beginPath();ctx.moveTo(ax1-6-H*0.8,y+H);ctx.lineTo(ax1+rl,y+RAMP_H-6+H);ctx.stroke();
+          late.push({k:'sign',x:ax1+8,y:y+H+RAMP_H*0.55,t:(g.off.label||(g.off.kind==='sys'?'轉接道 出口':'出口'))+' '+g.off.lanes+'車道',f:g.offFlow,al:'l'});
+        }else{if(bus)hline(s0,ax1-6-j*LANE_H*0.8,y);else hline(s0,ax1-6-j*LANE_H*0.8,y,dashP,dashOff)}
+        if(last){ctx.beginPath();ctx.moveTo(s0,y);ctx.lineTo(s0+tl2,y+LANE_H);ctx.lineTo(ax1-6-H*0.8,y+LANE_H);ctx.stroke()}
+      }else if(a.kind==='decel'){
+        const tl2=a.fromPrev?0:tl;
+        poly([[ax0,y],[ax0+tl2,y+LANE_H],[ax1,y+LANE_H],[ax1,y]],C.aux);
         poly([[ax1-6,y],[ax1+rl,y+RAMP_H-6],[ax1+rl,y+RAMP_H-6+LANE_H],[ax1-6-LANE_H*0.8,y+LANE_H]],C.aux);
         const gore=[[ax1,y],[ax1+rl,y],[ax1+rl,y+RAMP_H-6]];poly(gore,C.grass);hatch(gore,C.mark,8);
-        ctx.strokeStyle=C.mark;ctx.lineWidth=1.2;hline(ax0+tl,ax1,y,thickP,thickOff);
-        ctx.beginPath();ctx.moveTo(ax0,y);ctx.lineTo(ax0+tl,y+LANE_H);ctx.lineTo(ax1-6-LANE_H*0.8,y+LANE_H);ctx.lineTo(ax1+rl,y+RAMP_H-6+LANE_H);ctx.stroke();
+        ctx.strokeStyle=C.mark;ctx.lineWidth=1.2;hline(ax0+tl2,ax1,y,thickP,thickOff);
+        ctx.beginPath();ctx.moveTo(ax0,y);ctx.lineTo(ax0+tl2,y+LANE_H);ctx.lineTo(ax1-6-LANE_H*0.8,y+LANE_H);ctx.lineTo(ax1+rl,y+RAMP_H-6+LANE_H);ctx.stroke();
         ctx.beginPath();ctx.moveTo(ax1,y);ctx.lineTo(ax1+rl,y+RAMP_H-6);ctx.stroke();
         if(a.slot===0)late.push({k:'sign',x:ax1+8,y:mirrorY(y+LANE_H+RAMP_H*0.55),t:(g.off.label|| (g.off.kind==='sys'?'轉接道 出口':'出口'))+' '+g.off.lanes+'車道',f:g.offFlow,al:'l'});
       }else{
         const et=a.continues?0:tl;poly([[ax0,y],[ax1-et,y],[ax1,y],[ax1-et,y+LANE_H],[ax0,y+LANE_H]],C.aux);
+        if(!inner&&g.on.lanes>1){
+          // multi-lane entrance: one ramp carrying all its lanes and a single gore; each lane then runs its own acceleration length
+          const n=g.on.lanes,j=a.slot,H=n*LANE_H,nb=g.aux.find(b=>b.kind==='accel'&&b.seg===g.i&&b.slot===j+1),bx=nb?Math.max(X(nb.x1),ax0+6+H*0.8):ax0+6+H*0.8;
+          ctx.strokeStyle=C.mark;ctx.lineWidth=1.2;
+          if(j===0){poly([[ax0-rl,y+RAMP_H-6],[ax0+6,y],[ax0+6+H*0.8,y+H],[ax0-rl,y+RAMP_H-6+H]],C.aux);
+            const gore=[[ax0-rl,y],[ax0,y],[ax0-rl,y+RAMP_H-6]];poly(gore,C.grass);hatch(gore,C.mark,8);
+            hline(ax0,ax1-et,y,thickP,thickOff);ctx.beginPath();ctx.moveTo(ax0-rl,y+RAMP_H-6);ctx.lineTo(ax0,y);ctx.stroke();
+            for(let k=1;k<n;k++){ctx.save();ctx.setLineDash([6,8]);ctx.beginPath();ctx.moveTo(ax0-rl,y+RAMP_H-6+k*LANE_H);ctx.lineTo(ax0+6+k*LANE_H*0.8,y+k*LANE_H);ctx.stroke();ctx.restore()}
+            ctx.beginPath();ctx.moveTo(ax0-rl,y+RAMP_H-6+H);ctx.lineTo(ax0+6+H*0.8,y+H);ctx.stroke();
+          }else{if(a.busOnly)hline(ax0+6+j*LANE_H*0.8,ax1-et,y);else hline(ax0+6+j*LANE_H*0.8,ax1-et,y,dashP,dashOff)}
+          if(bx<X(a.x1)-et){ctx.beginPath();ctx.moveTo(bx,y+LANE_H);ctx.lineTo(ax1-et,y+LANE_H);ctx.lineTo(ax1,y+(a.continues?LANE_H:0));ctx.stroke()}
+        }else{
         poly([[ax0-rl,y+RAMP_H-6],[ax0+6,y],[ax0+6+LANE_H*0.8,y+LANE_H],[ax0-rl,y+RAMP_H-6+LANE_H]],C.aux);
         const gore=[[ax0-rl,y],[ax0,y],[ax0-rl,y+RAMP_H-6]];poly(gore,C.grass);hatch(gore,C.mark,8);
         ctx.strokeStyle=C.mark;ctx.lineWidth=1.2;hline(ax0,ax1-et,y,thickP,thickOff);
         ctx.beginPath();ctx.moveTo(ax0-rl,y+RAMP_H-6+LANE_H);ctx.lineTo(ax0+6+LANE_H*0.8,y+LANE_H);ctx.lineTo(ax1-et,y+LANE_H);ctx.lineTo(ax1,y+(a.continues?LANE_H:0));ctx.stroke();
         ctx.beginPath();ctx.moveTo(ax0-rl,y+RAMP_H-6);ctx.lineTo(ax0,y);ctx.stroke();
-        if(a.slot===0)late.push({k:'sign',x:ax0-rl+4,y:mirrorY(y+LANE_H+RAMP_H*0.55),t:(g.on.label||(g.on.kind==='sys'?'轉接道 入口':'入口'))+' '+g.on.lanes+'車道'+(g.on.meter>0?'・儀控':''),f:g.onFlow});
+        }
+        if(a.slot===0)late.push({k:'sign',x:ax0-rl+4,y:mirrorY(y+(inner?1:g.on.lanes)*LANE_H+RAMP_H*0.55),t:(g.on.label||(g.on.kind==='sys'?'轉接道 入口':'入口'))+' '+g.on.lanes+'車道'+(g.on.meter>0?'・儀控':''),f:g.onFlow});
         if(g.on.meter>0){const t=0.35,sx=ax0-rl*t,sy=y+(RAMP_H-6)*t+LANE_H/2,gr=sim.t-(sim.rampGreen[a.id]??-9)<1.2;ctx.strokeStyle=C.mark;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sx+3,sy-LANE_H/2+1);ctx.lineTo(sx+3+LANE_H*0.3,sy+LANE_H/2);ctx.stroke();ctx.fillStyle=C['canvas-ink'];ctx.fillRect(sx-4,sy-12,8,14);ctx.fillStyle=gr?'#1fbf4a':'#e53b2c';ctx.beginPath();ctx.arc(sx,gr?sy-2:sy-8,2.6,0,7);ctx.fill()}
         const back=sim.rampBack[a.id]||0;if(back>2)late.push({k:'sign',x:ax0-rl+4,y:mirrorY(y+LANE_H+RAMP_H+2),t:'匝道等候',f:back});
       }
+      if(a.busOnly&&!inner&&sc>0.2){ctx.fillStyle=C.mark;ctx.globalAlpha=.8;ctx.font='600 10px "Noto Sans TC",sans-serif';for(let xm=a.x0+150;xm<a.x1-150;xm+=400){const px=X(xm);if(px>-60&&px<W)ctx.fillText('路肩・限大客車',px,y+LANE_H/2+0.5)}ctx.globalAlpha=1}
       if(inner)ctx.restore();
     }
     // lane reduction: edge line follows the taper; Art. 188-1 white arrows in the ending lane every ~40 m before the taper
