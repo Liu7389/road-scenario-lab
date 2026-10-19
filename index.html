@@ -162,7 +162,8 @@ textarea#report{width:100%;min-height:260px;font-family:ui-monospace,Menlo,Conso
     <h2>道路情境實驗室 · 整合版</h2>
     <p>先選範例 → 調整路段與需求 → 觀察瓶頸 → 保存 A／B 比較。整合 Claude 進階版與 ChatGPT 檢核修正；程式、樣式均在本檔，可離線操作。</p>
     <p class="note">本作品為教學模型。地名範例的里程、速限、管制配置皆為情境輸入，未逐項驗證為現況。管理／養護體系只改變參考資料，不代表品質等級，也不直接改變容量。大型車用道政策、雨天係數、科技執法效果及水漂數值均為可調假設。</p>
-    <div class="toolrow"><button id="jsonSave" type="button">下載情境 JSON</button><button id="jsonLoad" type="button">匯入情境 JSON</button><input id="jsonFile" type="file" accept=".json,application/json" hidden><span id="jsonNote" role="status"></span></div>
+    <div class="toolrow"><button id="defaultCorridor" type="button">載入新版預設走廊（110／60）</button><button id="jsonSave" type="button">下載情境 JSON</button><button id="jsonLoad" type="button">匯入情境 JSON</button><input id="jsonFile" type="file" accept=".json,application/json" hidden><span id="jsonNote" role="status"></span></div>
+    <p class="note">預設走廊：所有路段一般車輛最高／最低速限 110／60 km/h、主線 3 車道；上坡另加爬坡車道。大貨車車種在本模型代表行照核定總重達 20 公噸者，預設 90／60 km/h，可逐段修改。若畫面保留上次設定，按上方按鈕載入新版預設。</p>
     <p id="inputError" role="alert" hidden style="color:var(--bad);font-weight:700"></p>
   </section>
 
@@ -387,7 +388,7 @@ const VC={
   van:{name:'小客貨',len:5.0,a:1.2,b:2.2,s0:2,T:1.35,heavy:false},
   ltruck:{name:'小貨車',len:6.5,a:1.0,b:2.0,s0:2.5,T:1.45,heavy:false},
   bus:{name:'大客車',len:12,a:0.8,b:1.8,s0:3,T:1.6,heavy:true},
-  truck:{name:'大貨車',len:16,a:0.5,b:1.5,s0:3,T:1.7,heavy:true}
+  truck:{name:'大貨車（總重≥20噸）',len:16,a:0.5,b:1.5,s0:3,T:1.7,heavy:true}
 };
 const VKEYS=Object.keys(VC);
 
@@ -414,7 +415,7 @@ const SOURCES={
 
 const DEFAULT_A={baseCap:2000,mergeCap:0.95,curveCap_curve:0.97,curveCap_multi:0.93,curveCap_cst:0.95,tunnelCap:0.95,wzCap:0.85,climbCapRatio:0.7,
   refGap:1.5,occTime:0.3,
-  etLevel:2.0,etGradeK:0.45,climbEtReduce:0.6,etBusRatio:0.6,etLtruck:1.2,ltruckGradeRatio:0.3,truckMax:90,busMax:100,crawlK:6,busCrawlRatio:0.5,
+  etLevel:2.0,etGradeK:0.45,climbEtReduce:0.6,etBusRatio:0.6,etLtruck:1.2,ltruckGradeRatio:0.3,busMax:100,crawlK:6,busCrawlRatio:0.5,
   speedMargin:0,curveFFS_curve:-5,curveFFS_multi:-10,curveFFS_cst:-7,tunnelFFS:-5,longTunnelFFS:-3,wzFFS:-10,slowMarkFFS:-3,bp:0.6,capSpeedRatio:0.75,
   rampCapIC:1400,rampCapSys:1900,accelShort:150,accelShortCap:0.90,accelMid:250,accelMidCap:0.95,
   kJam:120,waveSpeed:18,
@@ -426,7 +427,7 @@ const SCHEMA=[
   ['容量',[['baseCap','每車道基準容量','pc/h/ln',50],['refGap','基準容量對應跟車時距','秒',0.1],['occTime','車身佔用時間','秒',0.05],['curveCap_curve','單一彎道容量係數','×',0.01],['curveCap_multi','連續彎道容量係數','×',0.01],['curveCap_cst','彎道＋直線＋彎道容量係數','×',0.01],['tunnelCap','隧道容量係數','×',0.01],['wzCap','施工區開放車道容量係數','×',0.01],['mergeCap','車道縮減後匯入容量係數','×',0.01],['climbCapRatio','爬坡車道容量（相對基準）','×',0.05]]],
   ['匝道',[['rampCapIC','交流道匝道每車道容量','veh/h',50],['rampCapSys','系統交流道轉接道每車道容量','veh/h',50],['accelShort','加速車道「短」上限','m',10],['accelShortCap','短加速車道匯入容量係數','×',0.01],['accelMid','加速車道「中」上限','m',10],['accelMidCap','中加速車道匯入容量係數','×',0.01]]],
   ['車種當量',[['etLevel','大貨車當量（平坡）','pce',0.1],['etGradeK','上坡當量增量','每 % 坡度',0.05],['climbEtReduce','設爬坡車道後主線當量降幅','×',0.05],['etBusRatio','大客車當量增量（相對大貨車）','×',0.05],['etLtruck','小貨車當量（平坡）','pce',0.05],['ltruckGradeRatio','小貨車上坡增量（相對大貨車）','×',0.05]]],
-  ['車速',[['speedMargin','駕駛超速偏差假設（非合法容許值）','km/h',1],['truckMax','大貨車最高車速','km/h',5],['busMax','大客車最高車速','km/h',5],['crawlK','上坡大貨車降速','km/h／%',0.5],['busCrawlRatio','大客車上坡降速（相對大貨車）','×',0.05],['curveFFS_curve','單一彎道自由流速調整','km/h',1],['curveFFS_multi','連續彎道自由流速調整','km/h',1],['curveFFS_cst','彎道＋直線＋彎道自由流速調整','km/h',1],['tunnelFFS','隧道自由流速調整','km/h',1],['longTunnelFFS','長隧道（≥1 km）再調整','km/h',1],['wzFFS','施工區自由流速調整','km/h',1],['slowMarkFFS','減速標線自由流速調整','km/h',1],['bp','開始降速的流量／容量比','×',0.05],['capSpeedRatio','容量時車速／期望車速','×',0.05]]],
+  ['車速',[['speedMargin','駕駛超速偏差假設（非合法容許值）','km/h',1],['busMax','大客車最高車速','km/h',5],['crawlK','上坡大貨車降速','km/h／%',0.5],['busCrawlRatio','大客車上坡降速（相對大貨車）','×',0.05],['curveFFS_curve','單一彎道自由流速調整','km/h',1],['curveFFS_multi','連續彎道自由流速調整','km/h',1],['curveFFS_cst','彎道＋直線＋彎道自由流速調整','km/h',1],['tunnelFFS','隧道自由流速調整','km/h',1],['longTunnelFFS','長隧道（≥1 km）再調整','km/h',1],['wzFFS','施工區自由流速調整','km/h',1],['slowMarkFFS','減速標線自由流速調整','km/h',1],['bp','開始降速的流量／容量比','×',0.05],['capSpeedRatio','容量時車速／期望車速','×',0.05]]],
   ['排隊',[['kJam','壅塞密度','veh/km/ln',5],['waveSpeed','回堵波速','km/h',1]]],
   ['天候',[['rainCap','大雨容量係數','×',0.01],['rainFFS','大雨車速係數','×',0.01],['windCap','強風容量係數','×',0.01],['windFFS','強風車速係數','×',0.01],['windElevCap','強風＋高架額外容量係數','×',0.01],['windElevFFS','強風＋高架額外車速係數','×',0.01],['windElevET','強風＋高架大型車當量增加','pce',0.1],['fogCap','大霧容量係數','×',0.01],['fogFFS','大霧車速係數','×',0.01]]],
   ['儀控、壅塞與減速',[['capDrop','壅塞後瓶頸流出率（容量下降）','×',0.01],['rampStore','入口匝道可儲車長度','m',50],['queueSpace','排隊時每車佔用長度','m',0.5],['decelComfort','速限調降時的減速度','m/s²',0.1]]],
@@ -437,7 +438,7 @@ const SCHEMA=[
 const LOS_HCM=[6.8,11.2,16.2,21.7,28.0];
 
 function ramp(kind='none',vol=0,lanes=1,accel=250,meter=0){return{kind,vol,lanes,accel,meter}}
-function mkSeg(o){return Object.assign({id:rid(),name:'新路段',len:1.5,struct:'normal',align:'straight',grade:'level',gradePct:3,lanes:3,climb:false,wzClose:0,wzSide:'outer',marking:'dash',slowMark:false,tunnelRule:false,truckBan:false,meter:0,cams:0,section:false,tech:0,limit:100,minLimit:60,weather:'global',unit:'',off:ramp(),on:ramp()},o)}
+function mkSeg(o){return Object.assign({id:rid(),name:'新路段',len:1.5,struct:'normal',align:'straight',grade:'level',gradePct:3,lanes:3,climb:false,wzClose:0,wzSide:'outer',marking:'dash',slowMark:false,tunnelRule:false,truckBan:false,meter:0,cams:0,section:false,tech:0,limit:110,minLimit:60,truckLimit:Math.min(90,o?.limit??110),truckMinLimit:o?.minLimit??60,weather:'global',unit:'',off:ramp(),on:ramp()},o)}
 function base(o){return Object.assign({agency:'freeway',weather:'clear',rainI:40,tire:'new',hydroSlow:false,demand:3000,phf:0.95,period:60,ffs:110,headway:1.5,
   mix:{car:72,van:10,ltruck:6,bus:3,truck:9},legalMode:'all',slowPct:0.5,slowSpeed:55,truckNoInner:true,truckBan:false,losMode:'none',losCustom:[7,11,16,22,28],assump:clone(DEFAULT_A),segments:[]},o)}
 const PRESETS={
@@ -445,7 +446,7 @@ const PRESETS={
     mkSeg({name:'一般路段',len:2}),
     mkSeg({name:'交流道',len:1.8,off:ramp('ic',500,1),on:ramp('ic',400,1,250)}),
     mkSeg({name:'上坡＋爬坡車道',len:2.5,align:'curve',grade:'up',gradePct:4,climb:true}),
-    mkSeg({name:'長隧道（經公告適用隧道車距）',struct:'tunnel',len:3,lanes:2,marking:'double',limit:90,minLimit:60,slowMark:true,tunnelRule:true}),
+    mkSeg({name:'長隧道（經公告適用隧道車距）',struct:'tunnel',len:3,lanes:3,marking:'double',limit:110,minLimit:60,slowMark:true,tunnelRule:true}),
     mkSeg({name:'高架＋系統交流道',struct:'elevated',len:2.4,align:'cst',on:ramp('sys',900,2,350)})]}),
   // Common congestion spots. Lane counts, grades and ramp volumes are teaching assumptions, not survey data.
   // 國 5 geometry after 高公局「隧道里程查詢」and「交流道、服務區里程一覽表」(tunnel chainages, interchange km); grades and ramp volumes remain teaching assumptions.
@@ -500,12 +501,14 @@ const PRESETS={
     mkSeg({name:'匯入後路段',len:2.5}),
     mkSeg({name:'交流道',len:1.6,off:ramp('ic',700,1),on:ramp('ic',300,1,250)})]})
 };
-function migrateSeg(s){return Object.assign(mkSeg({}),s,{off:Object.assign(ramp(),s.off||{}),on:Object.assign(ramp(),s.on||{})})}
+function migrateSeg(s){return Object.assign(mkSeg(s),s,{off:Object.assign(ramp(),s.off||{}),on:Object.assign(ramp(),s.on||{})})}
+
+function upgradeScenario(sc){if(!sc)return null;if(Array.isArray(sc.segments))sc.segments=sc.segments.map(migrateSeg);return sc}
 
 /* ---------- state ---------- */
 let S,sel=0,A_snap=null,B_snap=null,R=null;
 function load(){
-  try{const raw=localStorage.getItem('roadsim.integrated.v1');if(raw){const o=JSON.parse(raw);if(o&&o.S&&o.S.segments&&o.S.segments.length){S=base(o.S);S.assump=Object.assign(clone(DEFAULT_A),o.S.assump||{});S.segments=S.segments.map(migrateSeg);A_snap=o.A||null;B_snap=o.B||null;return}}}catch(e){}
+  try{const raw=localStorage.getItem('roadsim.integrated.v1');if(raw){const o=JSON.parse(raw);if(o&&o.S&&o.S.segments&&o.S.segments.length){S=base(o.S);S.assump=Object.assign(clone(DEFAULT_A),o.S.assump||{});S.segments=S.segments.map(migrateSeg);A_snap=upgradeScenario(o.A);B_snap=upgradeScenario(o.B);return}}}catch(e){}
   S=PRESETS.corridor();
 }
 function save(){try{localStorage.setItem('roadsim.integrated.v1',JSON.stringify({S,A:A_snap,B:B_snap}))}catch(e){}}
@@ -602,8 +605,8 @@ function analyze(sc){
       if(sc.hydroSlow&&level!=='低')desired=Math.max(30,Math.min(desired,rec));
     }
     const busCrawl=s.grade==='up'?Math.max(40,A.busMax-A.crawlK*A.busCrawlRatio*s.gradePct*Math.min(1,s.len/1.5)):Infinity;
-    const truckCrawl=s.grade==='up'?Math.max(30,A.truckMax-A.crawlK*s.gradePct*Math.min(1,s.len/1.5)):Infinity;
-    const truckSp=Math.min(desired,A.truckMax*wFfs,truckCrawl),busSp=Math.min(desired,A.busMax*wFfs,busCrawl);
+    const truckCrawl=s.grade==='up'?Math.max(30,s.truckLimit-A.crawlK*s.gradePct*Math.min(1,s.len/1.5)):Infinity;
+    const truckSp=Math.min(desired,s.limit,s.truckLimit*wFfs,truckCrawl),busSp=Math.min(desired,A.busMax*wFfs,busCrawl);
     // safety distances at running (desired) speed
     const v=desired/3.6,fric=(wk==='rain'&&!tunnel)?A.fWet:A.fDry,G=(s.grade==='up'?1:s.grade==='down'?-1:0)*s.gradePct/100;
     const follow=v*sc.headway,react=v*A.reactT,brake=v*v/(2*9.81*Math.max(0.05,fric+G));
@@ -711,7 +714,7 @@ function analyze(sc){
   const ttFree=segs.reduce((a,g)=>a+g.len/g.desired,0)*60;
   return{segs,queues,main,crit,D0,phf,T,over:queues.length>0,Qtot,QrampTot,overflow,queueKm,ttFree,ttBase:baseT*60,ttAvg:baseT*60+avgDelay,ttLast:baseT*60+lastDelay,avgDelay,
     totalLen:x*1000,maxRows,throughput:q,maxDC:crit.dc,mix,mix0:segs.length?segs[0].mix:mix,rampWait,rampDelay,
-    lowMin:segs.filter(g=>g.src.minLimit>0&&(g.truckSp<g.src.minLimit||(mix.bus>0&&g.busSp<g.src.minLimit))).length,
+    lowMin:segs.filter(g=>(g.mix.truck>0&&g.src.truckMinLimit>0&&g.truckSp<g.src.truckMinLimit)||(g.mix.bus>0&&g.src.minLimit>0&&g.busSp<g.src.minLimit)).length,
     hydroHigh:segs.filter(g=>g.hydro&&g.hydro.level==='高').length};
 }
 const where=(R,Qo)=>Qo?`「${R.segs[Qo.seg].src.name}」${Qo.where==='merge'?'入口匯入區':Qo.where==='meter'?'主線儀控前':Qo.where==='exit'?'出口匝道':''}`:'—';
@@ -731,7 +734,7 @@ function warnings(sc,R){
     const s=g.src,nm=`「${s.name}」`;
     if(s.climb&&s.grade!=='up')w.push(`${nm}勾選了爬坡車道，但縱向線型不是上坡，爬坡車道不計入。`);
     if(s.grade==='up'&&s.gradePct>=3&&s.len>=1&&!s.climb)w.push(`${nm}為 ${s.gradePct}% 上坡、長 ${s.len} km，未設爬坡車道，大貨車當量約 ${fmt(g.E.truck,1)}。`);
-    if(s.minLimit>0&&g.truckSp<s.minLimit)w.push(`${nm}大貨車爬坡車速約 ${fmt(g.truckSp)} km/h，低於最低速限 ${s.minLimit} km/h${g.climbOpen?'；已設爬坡車道可分流':'，可考慮增設爬坡車道或調整最低速限'}。`);
+    if(g.mix.truck>0&&s.truckMinLimit>0&&g.truckSp<s.truckMinLimit)w.push(`${nm}20 噸以上大貨車期望車速約 ${fmt(g.truckSp)} km/h，低於該車種最低速限 ${s.truckMinLimit} km/h${g.climbOpen?'；已設爬坡車道可分流':'，可考慮增設爬坡車道或調整最低速限'}。`);
     if(s.minLimit>0&&sc.slowPct>0&&sc.slowSpeed<s.minLimit){slowSegs.push(s.name);if(s.marking==='double'||s.marking==='solid')slowNoPass.push(s.name)}
     if(s.minLimit>=s.limit&&s.minLimit>0)w.push(`${nm}最低速限不低於公告速限，請檢查。`);
     if(g.closed>0&&s.limit>80)w.push(`${nm}封閉 ${g.closed} 個車道，速限仍為 ${s.limit} km/h，施工區通常會降低速限。`);
@@ -810,7 +813,9 @@ function renderEditor(){
     <div class="row2"><label class="f">施工封閉車道數<input id="seg-wzClose" type="number" min="0" max="5" step="1" value="${s.wzClose}"></label><label class="f">封閉位置<select id="seg-wzSide">${opt(LBL.wzSide,s.wzSide)}</select></label></div>
   </fieldset>
   <fieldset class="grp"><legend>速限與天候</legend>
-    <div class="row3"><label class="f">公告速限 km/h<input id="seg-limit" type="number" min="30" max="130" step="10" value="${s.limit}"></label><label class="f">最低速限 km/h（0＝無）<input id="seg-minLimit" type="number" min="0" max="100" step="10" value="${s.minLimit}"></label><label class="f">本路段天候<select id="seg-weather">${opt(LBL.segWeather,s.weather||'global')}</select></label></div>
+    <div class="row3"><label class="f">一般車輛最高速限 km/h<input id="seg-limit" type="number" min="30" max="130" step="10" value="${s.limit}"></label><label class="f">最低速限 km/h（0＝無）<input id="seg-minLimit" type="number" min="0" max="100" step="10" value="${s.minLimit}"></label><label class="f">本路段天候<select id="seg-weather">${opt(LBL.segWeather,s.weather||'global')}</select></label></div>
+    <div class="row2"><label class="f">總重 20 噸以上大貨車最高速限 km/h<input id="seg-truckLimit" type="number" min="30" max="130" step="5" value="${s.truckLimit}"></label><label class="f">總重 20 噸以上大貨車最低速限 km/h（0＝無）<input id="seg-truckMinLimit" type="number" min="0" max="100" step="5" value="${s.truckMinLimit}"></label></div>
+    <p class="note">大貨車有效最高速限取道路與車種上限中較低者；最低速限獨立設定，用於低速檢核，不強制壅塞車輛加速。國道一般車速限 100／110 km/h 路段，行照核定總重達 20 公噸大貨車最高速限為 90 km/h；最低速限依現場標誌。部分省道快速公路另有 80 km/h 措施，請按情境修改。<a href="https://www.freeway.gov.tw/Publish.aspx?cnid=516&amp;p=6" target="_blank" rel="noopener">高公局速限資料</a>・<a href="https://www.thb.gov.tw/cp.aspx?n=12053" target="_blank" rel="noopener">公路局大貨車速限措施</a></p>
   </fieldset>
   <fieldset class="grp"><legend>匝道（出口在路段起點附近、入口在路段末端）</legend>
     <div class="row3"><label class="f">出口<select id="seg-off-kind">${opt(LBL.offKind,s.off.kind)}</select></label><label class="f">下匝道量 veh/h<input id="seg-off-vol" type="number" min="0" step="50" value="${s.off.vol}" ${offOn?'':'disabled'}></label><label class="f">匝道車道<input id="seg-off-lanes" type="number" min="1" max="2" step="1" value="${s.off.lanes}" ${offOn?'':'disabled'}></label></div>
@@ -857,8 +862,8 @@ function renderResults(){
   $('#segTable').innerHTML=`<thead><tr><th>路段</th><th>開放／總車道</th><th>匝道</th><th>fHV</th><th>容量 veh/h</th><th>到達流率</th><th>需求／容量</th><th>通過流量</th><th>期望車速</th><th>估計車速</th><th>密度 pc/km/ln</th><th>服務水準</th><th>狀態</th></tr></thead><tbody>${segs.map(g=>{const[st,c]=status(g);
     const rp=[g.off?`出 ${fmt(g.offFlow)}${g.spill?'（回堵）':''}`:'',g.on?`入 ${fmt(g.onFlow)}${g.on.meter>0?`（儀控 ${fmt(g.on.meter)}）`:''}`:'',g.meter?`主線儀控 ${fmt(g.meter)}`:''].filter(Boolean).join('／')||'—';
     return`<tr><td>${g.i+1}. ${esc(g.src.name)}${g.src.unit?`<br><span class="note">${esc(g.src.unit)}</span>`:''}</td><td>${g.open.length}／${g.total}${g.climbOpen?'（含爬坡）':''}</td><td>${rp}</td><td>${fmt(g.fHV,3)}<br><span class="note">大貨車 ${fmt(g.mix.truck*100,1)}%</span></td><td>${fmt(g.cap)}</td><td>${fmt(g.arrive)}</td><td class="${g.dc>1?'hi':g.dc>0.9?'mid':''}">${fmt(g.dc,2)}${g.on?`<br><span class="note ${g.dcMerge>1?'hi':''}">匯入 ${fmt(g.dcMerge,2)}</span>`:''}</td><td>${fmt(g.flow)}</td><td>${fmt(g.desired)}</td><td>${g.queueKm>0.01?`${fmt(g.avgSpeed)}<br><span class="note">回堵 ${fmt(Math.min(g.len,g.queueKm),2)} km</span>`:fmt(g.speed)}</td><td>${fmt(g.densityPc,1)}</td><td>${g.los||'—'}</td><td><span class="pill ${c}">${st}</span></td></tr>`}).join('')}</tbody>`;
-  $('#safeTable').innerHTML=`<thead><tr><th>路段</th><th>天候</th><th>速限／最低</th><th>期望車速</th><th>大貨車／大客車</th><th>跟車距離 m</th><th>車距模型 小型／大型 m</th><th>反應距離 m</th><th>停車距離 m</th><th>水膜 mm</th><th>假設水漂臨界 km/h</th><th>水漂敏感度</th><th>情境降速值</th></tr></thead><tbody>${segs.map(g=>{const s=g.src,h=g.hydro;const lowT=s.minLimit>0&&g.truckSp<s.minLimit,lowB=s.minLimit>0&&g.busSp<s.minLimit;
-    return`<tr><td>${g.i+1}. ${esc(s.name)}</td><td>${s.struct==='tunnel'?'隧道內不受影響':LBL.weather[g.wk]}</td><td>${s.limit}／${s.minLimit||'無'}</td><td>${fmt(g.desired)}</td><td><span class="${lowT?'hi':''}">${fmt(g.truckSp)}</span>／<span class="${lowB?'hi':''}">${fmt(g.busSp)}</span></td><td class="${g.follow<g.legal.dCar?'hi':''}">${fmt(g.follow)}</td><td>${fmt(g.legal.dCar)}／${fmt(g.legal.dHeavy)}<br><span class="note">${g.legal.rule==='tunnel'?'第 16 條隧道':'第 6 條'}${g.legal.enforced?'・納入容量':''}${g.legalBinding?'・<span class="hi">決定容量</span>':''}</span></td><td>${fmt(g.react)}</td><td>${fmt(g.stop)}</td><td>${h?fmt(h.film,1):'—'}</td><td>${h?fmt(h.vCar):'—'}</td><td>${h?`<span class="pill ${h.level==='高'?'hi':h.level==='中'?'mid':'ok'}">${h.level}</span>`:'—'}</td><td>${h?h.rec+' km/h':'—'}</td></tr>`}).join('')}</tbody>`;
+  $('#safeTable').innerHTML=`<thead><tr><th>路段</th><th>天候</th><th>一般車最高／最低</th><th>20噸以上大貨車最高／最低（有效上限）</th><th>期望車速</th><th>大貨車／大客車</th><th>跟車距離 m</th><th>車距模型 小型／大型 m</th><th>反應距離 m</th><th>停車距離 m</th><th>水膜 mm</th><th>假設水漂臨界 km/h</th><th>水漂敏感度</th><th>情境降速值</th></tr></thead><tbody>${segs.map(g=>{const s=g.src,h=g.hydro;const lowT=s.truckMinLimit>0&&g.truckSp<s.truckMinLimit,lowB=s.minLimit>0&&g.busSp<s.minLimit;
+    return`<tr><td>${g.i+1}. ${esc(s.name)}</td><td>${s.struct==='tunnel'?'隧道內不受影響':LBL.weather[g.wk]}</td><td>${s.limit}／${s.minLimit||'無'}</td><td>${s.truckLimit}／${s.truckMinLimit||'無'}<br><span class="note">有效最高 ${Math.min(s.limit,s.truckLimit)}</span></td><td>${fmt(g.desired)}</td><td><span class="${lowT?'hi':''}">${fmt(g.truckSp)}</span>／<span class="${lowB?'hi':''}">${fmt(g.busSp)}</span></td><td class="${g.follow<g.legal.dCar?'hi':''}">${fmt(g.follow)}</td><td>${fmt(g.legal.dCar)}／${fmt(g.legal.dHeavy)}<br><span class="note">${g.legal.rule==='tunnel'?'第 16 條隧道':'第 6 條'}${g.legal.enforced?'・納入容量':''}${g.legalBinding?'・<span class="hi">決定容量</span>':''}</span></td><td>${fmt(g.react)}</td><td>${fmt(g.stop)}</td><td>${h?fmt(h.film,1):'—'}</td><td>${h?fmt(h.vCar):'—'}</td><td>${h?`<span class="pill ${h.level==='高'?'hi':h.level==='中'?'mid':'ok'}">${h.level}</span>`:'—'}</td><td>${h?h.rec+' km/h':'—'}</td></tr>`}).join('')}</tbody>`;
   $('#warnList').innerHTML=warnings(S,R).map(t=>`<li>${esc(t)}</li>`).join('');
   renderChain();renderAB();save();
   resetSim();
@@ -871,7 +876,7 @@ function quickB(kind){
   let d='';
   if(kind==='lane'){sg.lanes=Math.min(6,sg.lanes+1);d=`「${sg.name}」增加一個車道`}
   if(kind==='demand'){b.demand=Math.round(b.demand*0.9);d='交通需求降低 10%'}
-  if(kind==='wz'){sg.wzClose=Math.min(sg.lanes-1+(sg.climb&&sg.grade==='up'?1:0),(sg.wzClose|0)+1);if(sg.limit>80)sg.limit=80;sg.minLimit=0;d=`「${sg.name}」施工封閉一個車道`}
+  if(kind==='wz'){sg.wzClose=Math.min(sg.lanes-1+(sg.climb&&sg.grade==='up'?1:0),(sg.wzClose|0)+1);if(sg.limit>80)sg.limit=80;sg.minLimit=0;sg.truckMinLimit=0;d=`「${sg.name}」施工封閉一個車道`}
   if(kind==='weather'){b.weather='rain';d='天候改為大雨'}
   if(kind==='meter'){
     const any=b.segments.some(s=>s.meter>0||s.on.meter>0);
@@ -924,7 +929,7 @@ function makeReport(){
   L.push(line);L.push('【二、路段配置與結果】');
   r.segs.forEach(g=>{const s=g.src;
     L.push(`${g.i+1}. ${s.name}｜${LBL.struct[s.struct]}・${LBL.align[s.align]}・${s.grade==='level'?'平坡':`${LBL.grade[s.grade]} ${s.gradePct}%`}・長 ${s.len} km`);
-    L.push(`   車道 ${g.open.length}/${g.total}${g.climbOpen?'（含爬坡車道）':''}・標線 ${LBL.markingShort[s.marking]}${s.slowMark?'・減速標線':''}・速限 ${s.limit}／最低 ${s.minLimit||'無'}・天候 ${s.struct==='tunnel'?'隧道內':LBL.weather[g.wk]}`);
+    L.push(`   車道 ${g.open.length}/${g.total}${g.climbOpen?'（含爬坡車道）':''}・標線 ${LBL.markingShort[s.marking]}${s.slowMark?'・減速標線':''}・一般車速限 ${s.limit}／最低 ${s.minLimit||'無'}・20噸以上大貨車速限 ${s.truckLimit}／最低 ${s.truckMinLimit||'無'}（有效最高 ${Math.min(s.limit,s.truckLimit)}）・天候 ${s.struct==='tunnel'?'隧道內':LBL.weather[g.wk]}`);
     if(g.off)L.push(`   出口：${LBL.offKind[s.off.kind]} ${fmt(s.off.vol)} veh/h（匝道容量 ${fmt(g.offCap)}${g.spill?'，回堵主線':''}）`);
     if(g.meter)L.push(`   主線儀控：放行 ${fmt(g.meter)} veh/h（到達 ${fmt(g.meterArrive)} veh/h）`);
     if(g.on)L.push(`   入口：${LBL.onKind[s.on.kind]} ${fmt(s.on.vol)} veh/h${s.on.meter>0?`（匝道儀控 ${fmt(s.on.meter)} veh/h，等候 ${fmt(g.rampWait)} 輛）`:''}，加速車道 ${s.on.accel} m，匯入區容量 ${fmt(g.capMerge)}，需求／容量 ${fmt(g.dcMerge,2)}`);
@@ -959,7 +964,7 @@ function validateState(sc){
   if(sc.losMode==='custom'&&(!Array.isArray(sc.losCustom)||sc.losCustom.length!==5||sc.losCustom.some((v,i)=>!Number.isFinite(v)||v<=0||(i&&v<=sc.losCustom[i-1]))))e.push('LOS 五個密度門檻須為正數且嚴格遞增');
   for(const [k,opts] of Object.entries({agency:LBL.agency,weather:LBL.weather,tire:{new:1,worn:1},losMode:{none:1,hcm:1,custom:1},legalMode:{all:1,tunnel:1,none:1}}))if(!Object.hasOwn(opts,sc[k]))e.push(k+'選項無效');
   sc.segments.forEach((s,i)=>{
-    const n='路段 '+(i+1);for(const k of ['climb','slowMark','tunnelRule','truckBan','section'])if(typeof s[k]!=='boolean')e.push(n+k+'須為布林值');check(s.len,.2,20,n+'長度');check(s.lanes,1,6,n+'車道數');check(s.gradePct,0,15,n+'坡度');check(s.limit,30,130,n+'速限');check(s.minLimit,0,s.limit,n+'最低速限');
+    const n='路段 '+(i+1);for(const k of ['climb','slowMark','tunnelRule','truckBan','section'])if(typeof s[k]!=='boolean')e.push(n+k+'須為布林值');check(s.len,.2,20,n+'長度');check(s.lanes,1,6,n+'車道數');check(s.gradePct,0,15,n+'坡度');check(s.limit,30,130,n+'速限');check(s.minLimit,0,s.limit,n+'最低速限');check(s.truckLimit,30,130,n+'20噸以上大貨車最高速限');check(s.truckMinLimit,0,Math.min(s.limit,s.truckLimit),n+'20噸以上大貨車最低速限');
     const total=s.lanes+(s.climb&&s.grade==='up'?1:0);check(s.wzClose,0,total-1,n+'施工封閉數（須至少保留一車道）');
     ['lanes','wzClose','cams','tech'].forEach(k=>{if(!Number.isInteger(s[k]))e.push(n+k+'必須為整數')});
     check(s.meter,0,30000,n+'儀控');check(s.cams,0,20,n+'照相');check(s.tech,0,20,n+'執法');
@@ -971,7 +976,7 @@ function validateState(sc){
 }
 function showErrors(errors){const p=$('#inputError');p.hidden=!errors.length;p.textContent=errors.join('；');if(errors.length){$('#play').textContent='播放';$('#report').value=''}}
 function downloadJSON(){const errors=validateState(S);if(errors.length||$('#inputError').textContent){showErrors(errors.length?errors:['請先修正尚未套用的輸入']);return}const b=new Blob([JSON.stringify({format:'road-lab-integrated-1',S,A:A_snap,B:B_snap},null,2)],{type:'application/json'});const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='road-scenario.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);$('#jsonNote').textContent='已下載目前情境及 A／B 快照。'}
-function parseImport(text){const o=JSON.parse(text);if(o.format!=='road-lab-integrated-1')throw Error('不支援的情境格式');for(const x of [o.S,o.A,o.B])if(x){const e=validateState(x);if(e.length)throw Error(e.join('；'))}if(!o.S)throw Error('缺少主情境');return o}
+function parseImport(text){const o=JSON.parse(text);if(o.format!=='road-lab-integrated-1')throw Error('不支援的情境格式');for(const x of [o.S,o.A,o.B])if(x){upgradeScenario(x);const e=validateState(x);if(e.length)throw Error(e.join('；'))}if(!o.S)throw Error('缺少主情境');return o}
 $('#jsonSave').addEventListener('click',downloadJSON);
 $('#jsonLoad').addEventListener('click',()=>$('#jsonFile').click());
 $('#jsonFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>250000)throw Error('檔案上限為 250 KB');const o=parseImport(await f.text());S=clone(o.S);A_snap=o.A?clone(o.A):null;B_snap=o.B?clone(o.B):null;sel=0;renderStatic();renderResults();$('#jsonNote').textContent='情境已匯入；動畫重新開始。'}catch(err){$('#jsonNote').textContent='未匯入：'+err.message}e.target.value=''});
@@ -987,7 +992,8 @@ document.addEventListener('click',e=>{
   if(t.dataset.quick){quickB(t.dataset.quick);return}
   if(t.dataset.loadab){const src=t.dataset.loadab==='A'?A_snap:B_snap;if(src){S=base(clone(src));S.segments=S.segments.map(migrateSeg);delete S._desc;sel=Math.min(sel,S.segments.length-1);renderStatic();renderResults();resetSim()}return}
   switch(t.id){
-    case 'segAdd':S.segments.splice(sel+1,0,mkSeg({name:`路段 ${S.segments.length+1}`,limit:S.segments[sel]?S.segments[sel].limit:100,minLimit:S.segments[sel]?S.segments[sel].minLimit:60}));sel++;break;
+    case 'defaultCorridor':loadPreset('corridor');return;
+    case 'segAdd':S.segments.splice(sel+1,0,mkSeg({name:`路段 ${S.segments.length+1}`,limit:S.segments[sel]?S.segments[sel].limit:110,minLimit:S.segments[sel]?S.segments[sel].minLimit:60,truckLimit:S.segments[sel]?.truckLimit??90,truckMinLimit:S.segments[sel]?.truckMinLimit??60}));sel++;break;
     case 'segDup':{const c=clone(S.segments[sel]);c.id=rid();c.name+='（複製）';S.segments.splice(sel+1,0,c);sel++;break}
     case 'segDel':if(S.segments.length>1){S.segments.splice(sel,1);sel=Math.max(0,sel-1)}break;
     case 'segLeft':if(sel>0){[S.segments[sel-1],S.segments[sel]]=[S.segments[sel],S.segments[sel-1]];sel--}break;
@@ -1132,17 +1138,19 @@ function segT(g,lane,p,v0){
   return Math.max(0.5,Math.min(4.5,hw-(p.s0+p.len)/Math.max(8,v0)));
 }
 function idmAcc(v,v0,gap,dv,p,T){const ss=p.s0+Math.max(0,v*T+v*dv/(2*Math.sqrt(p.a*p.b)));return Math.max(-1.2,p.a*(1-Math.pow(v/Math.max(v0,0.5),4)))-p.a*Math.pow(ss/Math.max(gap,0.2),2)}
+function vehicleLimit(v,g){return v.cls==='truck'?Math.min(g.src.limit,g.src.truckLimit):g.src.limit}
+function vehicleMin(v,g){return v.cls==='truck'?g.src.truckMinLimit:g.src.minLimit}
 function vDesired(v,g){return v.cls==='truck'?g.truckSp:v.cls==='bus'?g.busSp:g.desired}
 function v0For(v,si){
   // a lower limit ahead is approached at a constant comfortable deceleration, so speed falls steadily and the new limit is reached at the sign
   const segs=geo.segs,bc=A_(S).decelComfort,f=v.slow?1:v.f,g0=segs[si];
   // a slow driver complies with the minimum limit where enough technology enforcement is installed
-  const cap=v.slow?Math.max(S.slowSpeed,v.rc>g0.slowF?(g0.src.minLimit||0):0)/3.6:Infinity;
+  const cap=v.slow?Math.max(S.slowSpeed,v.rc>g0.slowF?(vehicleMin(v,g0)||0):0)/3.6:Infinity;
   let sp=Math.min(cap,vDesired(v,g0)/3.6*f);
-  if(g0.src.section)sp=Math.min(sp,g0.src.limit/3.6);
+  if(g0.src.section||v.cls==='truck')sp=Math.min(sp,vehicleLimit(v,g0)/3.6);
   // fixed speed cameras: drivers drop to the limit just before the camera, then speed up again
-  for(const cx of g0.camX||[]){const d=cx-v.x;if(d<0||d>800)continue;const lim=g0.src.limit/3.6,dz=d-A_(S).camZone;sp=Math.min(sp,dz<=0?lim:Math.sqrt(lim*lim+2*bc*dz))}
-  for(let j=si+1;j<segs.length;j++){const d=segs[j].start-v.x;if(d>1500)break;const vn=Math.min(cap,vDesired(v,segs[j])/3.6*f);if(vn<sp)sp=Math.min(sp,Math.sqrt(vn*vn+2*bc*d))}
+  for(const cx of g0.camX||[]){const d=cx-v.x;if(d<0||d>800)continue;const lim=vehicleLimit(v,g0)/3.6,dz=d-A_(S).camZone;sp=Math.min(sp,dz<=0?lim:Math.sqrt(lim*lim+2*bc*dz))}
+  for(let j=si+1;j<segs.length;j++){const d=segs[j].start-v.x;if(d>1500)break;const vn=Math.min(cap,vDesired(v,segs[j])/3.6*f,v.cls==='truck'?vehicleLimit(v,segs[j])/3.6:Infinity);if(vn<sp)sp=Math.min(sp,Math.sqrt(vn*vn+2*bc*d))}
   if(v.exit){const ve=Math.min(sp,60/3.6),d=v.exit.x0-100-v.x;sp=Math.min(sp,d<=0?ve:Math.sqrt(ve*ve+2*bc*d))}
   return sp;
 }
@@ -1543,7 +1551,7 @@ function updateStats(){
   const lanes=new Array(geo.maxRows).fill(0);let tight=0,moving=0,belowMin=0,slow=0;
   const L=buildLanes();
   for(const [lane,arr] of L){for(let k=0;k<arr.length;k++){const v=arr[k];lanes[v.lane]=(lanes[v.lane]||0)+1;if(v.slow)slow++;
-    const g=geo.segs[segAt(v.x)];if(g.src.minLimit>0&&vDesired(v,g)*(v.slow?0:1)+(v.slow?S.slowSpeed:0)<g.src.minLimit)belowMin++;
+    const g=geo.segs[segAt(v.x)];if(vehicleMin(v,g)>0&&vDesired(v,g)*(v.slow?0:1)+(v.slow?S.slowSpeed:0)<vehicleMin(v,g))belowMin++;
     if(k>0&&v.v>5){const l=arr[k-1];const gap=l.x-l.len-v.x,kmh=v.v*3.6,hv=VC[v.cls].heavy;
       const need=g.legal.rule==='tunnel'?(kmh<20?20:hv?100:50):(hv?Math.max(kmh/2,kmh-20):kmh/2)*(g.legal.dCar/(g.desired/2));
       v.gapR=gap/need;moving++;if(v.gapR<1)tight++}else v.gapR=null}}
@@ -1574,7 +1582,7 @@ new MutationObserver(readColors).observe(document.documentElement,{attributes:tr
 load();
 if(validateState(S).length)S=PRESETS.corridor();
 if(A_snap&&validateState(A_snap).length)A_snap=null;if(B_snap&&validateState(B_snap).length)B_snap=null;
-if(!A_snap||!B_snap){A_snap=clone(S);A_snap._desc='範例原始設定';const b=clone(S);const t=b.segments.find(s=>s.struct==='elevated')||b.segments[b.segments.length-1];t.wzClose=1;t.limit=80;t.minLimit=0;b._desc=`「${t.name}」施工封閉一個車道`;B_snap=b}
+if(!A_snap||!B_snap){A_snap=clone(S);A_snap._desc='範例原始設定';const b=clone(S);const t=b.segments.find(s=>s.struct==='elevated')||b.segments[b.segments.length-1];t.wzClose=1;t.limit=80;t.minLimit=0;t.truckMinLimit=0;b._desc=`「${t.name}」施工封閉一個車道`;B_snap=b}
 readColors();
 renderStatic();renderResults();
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(readColors);
