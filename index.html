@@ -671,7 +671,7 @@ const REGIONAL_SOURCES={
  tai63Bridge:['公路局・台63高架伸縮縫與大里一南出','https://www.thb.gov.tw/News_Content_Table.aspx?n=7839&s=280285&sms=13275']
 };
 Object.assign(ROUTE_META,{
- civic:{title:'地方養護｜市民大道高架東向：建國→光復→永吉',text:'臺北市市民高架採最高80、單向2主線；官方表明建國東入、光復與永吉東出，故不為湊成雙向功能而補不存在的同向匝道。專用機車、平面道路與號誌不列汽車主線容量。',sources:['civic','taipeiSpeed','civicCare']},
+ civic:{title:'地方養護｜市民大道高架東向：建國→光復→永吉',text:'臺北市市民高架採最高80、單向2主線；官方表明建國東入、光復與永吉東出，故不為湊成雙向功能而補不存在的同向匝道。本模型未另模擬機車；高架下平面道路與號誌不列入主線容量。',sources:['civic','taipeiSpeed','civicCare']},
  danjiang:{title:'公路局｜淡江大橋南向：淡水→八里',text:'台61一般汽車主線採單向2車道、最高80。機車、公車／預留輕軌、人行及自行車空間獨立，不加進一般容量；本例只模擬橋梁與引道選段，沒有繪入全部端點匝道。',sources:['speed','bridge']},
  suhua:{title:'公路局｜台9蘇花改南下：南澳→武塔→觀音／谷風→和平',text:'單向1一般車道，內側緊急救援／大客車優先空間不當成第2一般車道。125K576–143K802依官方公告採70／50，其餘端點另設降速；封閉式鼓音橋暫與觀音／谷風合併建模。車距按主管機關公告情境。',sources:['eastSpeed','suhua','tunnelKm','suhuaRoute']},
  nanhui:{title:'公路局｜台9南迴改南下：安朔→草埔森永隧道→草埔',text:'雙車道主線，安朔—草埔改善段採70／50，隧道出口437K600–438K005降為50。隧道禁止變換車道；本例僅涵蓋改善段，未把南迴公路全線視為封閉道路。',sources:['eastSpeed','nanhui','nanhuiKm']},
@@ -1619,7 +1619,7 @@ function draw(){
         ctx.strokeStyle=C.mark;ctx.lineWidth=1.2;hline(ax0,ax1-et,y,thickP,thickOff);
         ctx.beginPath();ctx.moveTo(ax0-rl,y+RAMP_H-6+LANE_H);ctx.lineTo(ax0+6+LANE_H*0.8,y+LANE_H);ctx.lineTo(ax1-et,y+LANE_H);ctx.lineTo(ax1,y+(a.continues?LANE_H:0));ctx.stroke();
         ctx.beginPath();ctx.moveTo(ax0-rl,y+RAMP_H-6);ctx.lineTo(ax0,y);ctx.stroke();
-        if(a.slot===0)late.push({k:'sign',x:ax0-rl+4,y:mirrorY(y+LANE_H+RAMP_H*0.55),t:(g.on.kind==='sys'?'轉接道 入口':'入口')+' '+g.on.lanes+'車道'+(g.on.meter>0?'・儀控':''),f:g.onFlow});
+        if(a.slot===0)late.push({k:'sign',x:ax0-rl+4,y:mirrorY(y+LANE_H+RAMP_H*0.55),t:(g.on.label||(g.on.kind==='sys'?'轉接道 入口':'入口'))+' '+g.on.lanes+'車道'+(g.on.meter>0?'・儀控':''),f:g.onFlow});
         if(g.on.meter>0){const t=0.35,sx=ax0-rl*t,sy=y+(RAMP_H-6)*t+LANE_H/2,gr=sim.t-(sim.rampGreen[a.id]??-9)<1.2;ctx.strokeStyle=C.mark;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sx+3,sy-LANE_H/2+1);ctx.lineTo(sx+3+LANE_H*0.3,sy+LANE_H/2);ctx.stroke();ctx.fillStyle=C['canvas-ink'];ctx.fillRect(sx-4,sy-12,8,14);ctx.fillStyle=gr?'#1fbf4a':'#e53b2c';ctx.beginPath();ctx.arc(sx,gr?sy-2:sy-8,2.6,0,7);ctx.fill()}
         const back=sim.rampBack[a.id]||0;if(back>2)late.push({k:'sign',x:ax0-rl+4,y:mirrorY(y+LANE_H+RAMP_H+2),t:'匝道等候',f:back});
       }
@@ -1655,8 +1655,8 @@ function draw(){
     if(g.stopX!=null){const px=X(g.stopX);if(px>-40&&px<W+20){const hw=g.mainOpenAtStop*3600/g.meter;ctx.strokeStyle=C.mark;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(px,roadTop+1);ctx.lineTo(px,roadTop+g.total*LANE_H-1);ctx.stroke();
       for(const l of g.open){if(l===g.climbIdx)continue;const nt=sim.meterNext[g.i+':'+l]||0,green=nt>sim.t&&nt-sim.t>hw-1.5;ctx.fillStyle=C['canvas-ink'];ctx.fillRect(px+3,roadTop+l*LANE_H+2,8,LANE_H-4);ctx.fillStyle=green?'#1fbf4a':'#e53b2c';ctx.beginPath();ctx.arc(px+7,roadTop+l*LANE_H+LANE_H/2,2.8,0,7);ctx.fill()}
       late.push({k:'meter',x:px,t:`主線儀控 ${fmt(g.meter)} veh/h`})}}
-    ctx.strokeStyle=C.yellow;ctx.lineWidth=1.5;hline(cx0,cx1,roadTop+1);
-    ctx.strokeStyle=C.mark;{const lo=g.total-1;hline(cx0,Math.min(cx1,dropEnd(lo)),yOuter-1)}
+    ctx.strokeStyle=C.yellow;ctx.lineWidth=1.5;for(const [a,b] of edgeSpans(g,'inner')){const xa=Math.max(cx0,X(a)),xb=Math.min(cx1,X(b));if(xb>xa)hline(xa,xb,roadTop+1)}
+    ctx.strokeStyle=C.mark;{const lo=g.total-1;for(const [a,b] of edgeSpans(g,'outer')){const xa=Math.max(cx0,X(a)),xb=Math.min(cx1,X(b),dropEnd(lo));if(xb>xa)hline(xa,xb,yOuter-1)}}
     // speed-reduction markings at segment start
     if(s.slowMark){ctx.fillStyle=C.mark;ctx.globalAlpha=.8;let d=0;for(let k=0;k<10;k++){d+=22-k*1.6;const px=X(g.start+40+d);if(px>x1)break;ctx.fillRect(px,roadTop+2,Math.max(1,0.6*sc+0.6),g.total*LANE_H-4)}ctx.globalAlpha=1}
     // speed cameras, section control and technology enforcement, drawn on the outer shoulder
@@ -1713,6 +1713,7 @@ function rampLen(a,sc){const all=geo.segs.flatMap(g=>g.aux.filter(b=>b.slot===a.
   else{const pv=all.slice(0,i).reverse().find(b=>b.x1<=a.x0+1);if(pv)room=(a.x0-pv.x1)*sc*(pv.kind==='decel'?0.5:1)-6}
   return Math.max(8,Math.min(Math.max(40,180*sc),room))}
 function rampSign(x,y,t,flow){ctx.font='700 11px "Noto Sans TC",sans-serif';const txt=`${t} ${fmt(flow||0)}`;const w=ctx.measureText(txt).width+10;ctx.fillStyle=C.sign;ctx.fillRect(x,y-8,w,16);ctx.strokeStyle=C['sign-ink'];ctx.lineWidth=1;ctx.strokeRect(x+1.5,y-6.5,w-3,13);ctx.fillStyle=C['sign-ink'];ctx.fillText(txt,x+5,y+0.5)}
+function edgeSpans(g,side){let at=g.start;const spans=[];for(const a of g.aux.filter(a=>a.slot===0&&(a.side||'outer')===side).sort((a,b)=>a.x0-b.x0)){if(a.x0>at)spans.push([at,a.x0]);at=Math.max(at,a.x1)}if(at<g.end)spans.push([at,g.end]);return spans}
 function roadY(lane){return TOP+(geo?.innerRows||0)*LANE_H+(geo?.innerRows?RAMP_H:0)+lane*LANE_H}
 function drawVehicles(X,sc){
   const mode=$('#colorMode').value;
