@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>body{margin:0}[hidden]{display:none!important}</style>
-<title>封閉式道路交通情境模擬器｜第八版</title>
+<title>封閉式道路交通情境模擬器</title>
 <style>
 /* Layout: road strip on top (the thing you watch), settings column + analysis column below, then A/B, report and assumptions. Freeway guide-sign green is the one accent. */
 :root{
@@ -179,9 +179,10 @@ textarea#report{width:100%;min-height:260px;font-family:ui-monospace,Menlo,Conso
     </div>
   </header>
   <section id="routeInfo" class="card" hidden aria-label="路徑配置與查核依據"></section>
-  <section class="card" aria-label="整合版說明">
-    <h2>道路情境實驗室 · 整合版</h2>
-    <p>第八版 2026.10.19・請從範例選單重新載入新版路線。先選範例 → 調整路段與需求 → 觀察瓶頸 → 保存 A／B 比較。整合 Claude 進階版與 ChatGPT 檢核修正；程式、樣式均在本檔，可離線操作。</p>
+  <section class="card" aria-label="模擬器說明">
+    <h2>封閉式道路交通情境模擬器</h2>
+    <p>先選擇道路範例，再調整路段與交通需求、觀察瓶頸，最後保存 A／B 方案進行比較。程式與樣式均包含在本檔，可離線操作。</p>
+    <p class="note">更新紀錄｜2026.10.19：新增及修正道路案例、車道配置、速限與路肩情境。</p>
     <p class="note">本作品為教學模型。未特別標註高架／橋梁或隧道的構造預設為路堤；這是建模預設，不能用來判定未查證道路的實際構造。地名範例的里程、速限、管制配置皆為情境輸入，未逐項驗證為現況。管理／養護體系只改變參考資料，不代表品質等級，也不直接改變容量。大型車用道政策、雨天係數、科技執法效果及水漂數值均為可調假設。</p>
     <div class="toolrow"><button id="defaultCorridor" type="button">載入新版預設走廊（110／60）</button><button id="jsonSave" type="button">下載情境 JSON</button><button id="jsonLoad" type="button">匯入情境 JSON</button><input id="jsonFile" type="file" accept=".json,application/json" hidden><span id="jsonNote" role="status"></span></div>
     <p class="note">預設走廊：所有路段一般車輛最高／最低速限 110／60 km/h、主線 3 車道；上坡另加爬坡車道。大貨車車種在本模型代表行照核定總重達 20 公噸者，預設 90／60 km/h，可逐段修改。若畫面保留上次設定，按上方按鈕載入新版預設。</p>
