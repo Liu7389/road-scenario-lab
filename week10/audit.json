@@ -5,7 +5,7 @@
   "printed_page": "1-4",
   "table": "1.4.1",
   "pdf_sha256": "64d33a5f0a68e4258cc5bdb4568af4c202b8f516b98ff2a50442b88cdc558241",
-  "collection_count": 7,
+  "collection_count": 13,
   "first_pass_current_rule_candidates": [
     "S2",
     "S3",
@@ -21,7 +21,7 @@
     "S7": "特定歷史工程案例"
   },
   "verified_cells": {
-    "administrative": 18,
+    "administrative": 24,
     "function": 30,
     "speed": 24
   },
