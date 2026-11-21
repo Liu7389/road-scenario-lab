@@ -1,0 +1,29 @@
+{
+  "checked_on": "2026-11-21",
+  "current_edition": "115-07",
+  "pdf_page": 8,
+  "printed_page": "1-4",
+  "table": "1.4.1",
+  "pdf_sha256": "64d33a5f0a68e4258cc5bdb4568af4c202b8f516b98ff2a50442b88cdc558241",
+  "collection_count": 7,
+  "first_pass_current_rule_candidates": [
+    "S2",
+    "S3",
+    "S7"
+  ],
+  "flagged_for_current_rules": [
+    "S3",
+    "S7"
+  ],
+  "final_roles": {
+    "S2": "現行通則",
+    "S3": "舊版摘要比對",
+    "S7": "特定歷史工程案例"
+  },
+  "verified_cells": {
+    "administrative": 18,
+    "function": 30,
+    "speed": 24
+  },
+  "all_checked_cells_match": true
+}
