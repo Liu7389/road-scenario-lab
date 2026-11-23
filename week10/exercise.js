@@ -21,7 +21,7 @@ function showMatches() {
 routeType.addEventListener("change",showMatches);
 functionType.addEventListener("change",showMatches);
 showMatches();
-const quizSections = ["quiz","quizRoad"].map(id => document.getElementById(id));
+const quizSections = ["quiz","quizRoad","quizExtended"].map(id => document.getElementById(id));
 highwayWiki.quiz.forEach((question,i) => {
   const field=document.createElement("fieldset");
   const legend=document.createElement("legend");
@@ -40,5 +40,5 @@ highwayWiki.quiz.forEach((question,i) => {
     option.append(input,document.createTextNode(" "+label));
     field.append(option);
   });
-  field.append(feedback); quizSections[i < 3 ? 0 : 1].append(field);
+  field.append(feedback); quizSections[Math.floor(i / 3)].append(field);
 });
